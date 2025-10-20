@@ -1,0 +1,9 @@
+{
+    "dotnet.defaultSolution": "client/AINovelStudio/AINovelStudio.sln",
+    "omnisharp.enableRoslynAnalyzers": true,
+    "omnisharp.enableEditorConfigSupport": true,
+    "files.exclude": {
+        "**/bin": true,
+        "**/obj": true
+    }
+}
