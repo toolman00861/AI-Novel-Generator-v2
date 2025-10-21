@@ -4,6 +4,7 @@
 - 客户端（C#/.NET WPF + MVVM）：
   - 窗口/页面：仪表盘、小说列表/详情、章节编辑器、人物设计、AI 生成面板
   - 数据：通过 HttpClient 访问可选后端 REST/SSE；统一错误与加载态
+  - 持久化服务：抽离为通用模块（`IPersistenceService` + `SqlitePersistenceService`），统一数据库连接与初始化
 - 后端（可选，ASP.NET Core + EF Core）：
   - 模块：Auth（可后置）、Content（小说/章节/人物）、Context、AI Provider、Admin
   - 接口：REST + SSE（流式生成）
@@ -37,6 +38,7 @@
 - WPF：适合 Windows 桌面复杂 UI，MVVM 模式易于维护
 - ASP.NET Core：模块化清晰、统一 .NET 技术栈、易部署（可选）
 - SQLite/SQL Server：SQLite 开发便捷；生产可选 SQL Server，关系型建模清晰
+- 客户端设置持久化：内嵌 SQLite 文件（`AINovelStudio.settings.db`），首启自动从 `appsettings.client.json` 迁移；由 `SettingsService` 提供读写接口
 
 ## 横切关注点
 - 鉴权与配额：JWT + rate limit（后置）

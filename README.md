@@ -18,8 +18,8 @@ repo-root/
     03-api-spec.md
     04-data-model.md
     05-frontend-backend-plan.md
-  client/                    # WPF 客户端（后续创建）
-  server/                    # ASP.NET Core 后端（可选，后续创建）
+  client/                    # WPF 客户端（已实现：AI 生成、设置持久化）
+  server/                    # ASP.NET Core 后端（可选）
 ```
 
 ## 功能概览
@@ -32,7 +32,18 @@ repo-root/
 ## 部署建议
 - 客户端：Windows 桌面应用（WPF），通过安装包分发（MSIX/ClickOnce/zip）
 - 后端（可选）：ASP.NET Core 部署于自有服务器或容器，暴露 REST + SSE 接口
-- 配置：后端使用 `appsettings.json`；客户端使用应用配置（API 基址、功能开关）
+- 配置与持久化：后端使用 `appsettings.json`；客户端使用 SQLite 轻量持久化存储（本地 `AINovelStudio.settings.db`），首启自动从 `appsettings.client.json` 迁移
+
+## 持久化存储服务（客户端）
+- 模块抽离：引入通用接口 `IPersistenceService` 与实现 `SqlitePersistenceService`，统一提供数据库路径、连接与初始化
+- 服务职责：跨模块复用（设置、后续内容管理等），避免各服务重复管理连接与路径
+- 位置：默认生成在应用目录的 `AINovelStudio.settings.db`
+- 迁移策略：首次运行若数据库无记录，自动读取并迁移 `appsettings.client.json` 到数据库；此后以数据库为准
+- 示例使用：
+  - 创建服务：`var persistence = new SqlitePersistenceService();`
+  - 在模块中注入：`new SettingsService(persistence)`
+  - 读写设置：`SettingsService.Load()` / `SettingsService.Save(AppSettings)`
+- 手动重置：在设置页点击“重置为默认值”后再“保存”；或删除数据库文件重新初始化
 
 ## 开发里程碑
 1. 文档与架构定稿（当前阶段）
@@ -46,4 +57,4 @@ repo-root/
 - 客户端：`cd client && dotnet restore && dotnet run`
 - 后端（可选）：`cd server && dotnet restore && dotnet run`
 
-> 当前仓库为文档阶段，代码将在文档确认后创建。
+> 当前仓库已包含客户端代码（WPF），并实现 AI 生成与设置的 SQLite 持久化；后端为可选组件。

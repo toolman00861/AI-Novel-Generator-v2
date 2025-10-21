@@ -15,6 +15,8 @@
   - 编辑器（富文本/Markdown）、上下文选择器、角色卡片、生成进度（SSE 流）
 - 数据访问
   - 基于 HttpClient + Polly：统一请求封装、错误与加载态管理；SSE/流式解析封装
+- 持久化存储服务
+  - 抽象接口 `IPersistenceService` 与实现 `SqlitePersistenceService`，供设置、内容管理等模块复用；可替换为其他存储实现
 
 ## 后端模块与接口
 - Modules：`ContentModule`、`ContextModule`、`GenerationModule`、`ProviderModule`、`AuthModule`（后置）
@@ -30,6 +32,7 @@
   - `Provider:BaseUrl`（可选）
   - `Provider:DefaultModel`（如 `gpt-4o-mini`）
 - 客户端配置（WPF）：
+  - 配置与设置持久化：使用内嵌 SQLite 文件 `AINovelStudio.settings.db`（`Microsoft.Data.Sqlite`）；首启自动从 `appsettings.client.json` 迁移；通过 `SettingsService.Load()` / `SettingsService.Save()` 读写
   - `ApiBase`（例如 `https://api.example.com`，有后端时）
   - `FeatureFlags`（可选）
 
