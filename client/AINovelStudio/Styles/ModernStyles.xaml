@@ -145,6 +145,19 @@
         </Style.Triggers>
     </Style>
 
+    <!-- 次要按钮样式 -->
+    <Style x:Key="SecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource ModernButtonStyle}">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{StaticResource HoverBrush}"/>
+                <Setter Property="Foreground" Value="{StaticResource PrimaryDarkBrush}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
     <!-- 成功按钮样式 -->
     <Style x:Key="SuccessButtonStyle" TargetType="Button" BasedOn="{StaticResource ModernButtonStyle}">
         <Setter Property="Background" Value="{StaticResource SuccessBrush}"/>
@@ -411,34 +424,6 @@
                         <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)"
                                          To="0"
                                          Duration="{StaticResource NormalDuration}"
-                                         EasingFunction="{StaticResource EaseOut}"/>
-                    </Storyboard>
-                </BeginStoryboard>
-            </EventTrigger>
-            <EventTrigger RoutedEvent="MouseEnter">
-                <BeginStoryboard>
-                    <Storyboard>
-                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
-                                         To="1.02"
-                                         Duration="{StaticResource FastDuration}"
-                                         EasingFunction="{StaticResource EaseOut}"/>
-                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
-                                         To="1.02"
-                                         Duration="{StaticResource FastDuration}"
-                                         EasingFunction="{StaticResource EaseOut}"/>
-                    </Storyboard>
-                </BeginStoryboard>
-            </EventTrigger>
-            <EventTrigger RoutedEvent="MouseLeave">
-                <BeginStoryboard>
-                    <Storyboard>
-                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
-                                         To="1"
-                                         Duration="{StaticResource FastDuration}"
-                                         EasingFunction="{StaticResource EaseOut}"/>
-                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
-                                         To="1"
-                                         Duration="{StaticResource FastDuration}"
                                          EasingFunction="{StaticResource EaseOut}"/>
                     </Storyboard>
                 </BeginStoryboard>
