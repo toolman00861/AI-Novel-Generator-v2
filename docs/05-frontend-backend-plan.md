@@ -1,8 +1,8 @@
-# 前后端拆分与开发计划（MVP）
+# 客户端开发计划（MVP）
 
 ## 技术栈与目录
 - 客户端：`client/`（WPF + .NET + MVVM）
-- 后端（可选）：`server/`（ASP.NET Core + EF Core + SQLite/SQL Server）
+- 持久化：本地 SQLite（`AINovelStudio.settings.db`，首次启动自动创建）
 
 ## 客户端模块与页面
 - 页面
@@ -18,36 +18,25 @@
 - 持久化存储服务
   - 抽象接口 `IPersistenceService` 与实现 `SqlitePersistenceService`，供设置、内容管理等模块复用；可替换为其他存储实现
 
-## 后端模块与接口
-- Modules：`ContentModule`、`ContextModule`、`GenerationModule`、`ProviderModule`、`AuthModule`（后置）
-- Controllers（参考 `docs/03-api-spec.md`）
-- Entities：参考 `docs/04-data-model.md`
-- Provider 接口：统一 `generate()` 返回流；支持多厂商切换
+
 
 ## 环境与配置
-- 后端 `appsettings.json`（ASP.NET Core）：
-  - `ConnectionStrings:Default`（SQLite/SQL Server）
-  - `Provider:Vendor`（openai|azure|openrouter|custom）
-  - `Provider:ApiKey`
-  - `Provider:BaseUrl`（可选）
-  - `Provider:DefaultModel`（如 `gpt-4o-mini`）
 - 客户端配置（WPF）：
-  - 配置与设置持久化：使用内嵌 SQLite 文件 `AINovelStudio.settings.db`（`Microsoft.Data.Sqlite`）；首启自动从 `appsettings.client.json` 迁移；通过 `SettingsService.Load()` / `SettingsService.Save()` 读写
-  - `ApiBase`（例如 `https://api.example.com`，有后端时）
+  - 配置与设置持久化：使用内嵌 SQLite 文件 `AINovelStudio.settings.db`（`Microsoft.Data.Sqlite`）；首次启动自动创建并在无记录时从 `appsettings.client.json` 迁移；通过 `SettingsService.Load()` / `SettingsService.Save()` 读写
+  - Provider：供应商配置（`vendor`、`apiKey`、`baseUrl`、`defaultModel`）由客户端设置并持久化到 SQLite
   - `FeatureFlags`（可选）
 
 ## 开发里程碑（建议）
-1. 初始化（可选）后端骨架（ASP.NET Core）与核心实体（novel/chapter/character）
-2. 实现基础 CRUD 与列表分页；客户端拉通列表与详情页
-3. 实现 Context 聚合端点与客户端上下文选择器
-4. 集成 AI Provider（OpenAI），实现 `/v1/generate` SSE 与客户端流式展示
+1. 搭建 WPF 客户端骨架：窗口/页面、MVVM、模块化服务（持久化、Provider）
+2. 实现基础 CRUD 与列表分页（本地 SQLite）；客户端拉通列表与详情页
+3. 实现上下文选择器与聚合逻辑（客户端）
+4. 集成第三方 AI Provider（OpenAI/Azure/OpenRouter 等），实现流式输出或分块解析
 5. 增强人物设计（关系、口吻、标签）；将角色注入生成上下文
-6. 收敛与优化：错误处理、配额与日志；打包发布（Windows）
+6. 收敛与优化：错误处理、日志与打包发布（Windows）
 
 ## 部署方案（初版）
-- 后端（可选）：Docker 容器（`mcr.microsoft.com/dotnet/aspnet:8.0`）+ SQL Server/SQLite；或裸机 IIS/Kestrel
 - 客户端：MSIX/ClickOnce/安装包分发；支持自动更新（可选）
-- 监控：后端日志与错误告警；客户端崩溃/使用统计（可选）
+- 监控：客户端崩溃/使用统计（可选）
 
 ## 测试与质量
 - 单元测试：Context 聚合与 Provider 调用（mock）

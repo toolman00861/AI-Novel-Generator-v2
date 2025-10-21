@@ -1,10 +1,10 @@
 # AI 小说工坊（AI Novel Studio）
 
-一个基于 C#/.NET 的 Windows 桌面应用（WPF）用于 AI 小说生成与管理。支持基础的文章内容管理、联动上下文、人物设定；AI 生成通过第三方 API 或可选后端服务实现。
+一个基于 C#/.NET 的 Windows 桌面应用（WPF）用于 AI 小说生成与管理。支持基础的文章内容管理、联动上下文、人物设定；AI 生成通过第三方 API 直接调用实现（不包含自建后端）。
 
 ## 技术选型（建议）
 - 客户端：C#（.NET，WPF，MVVM）
-- 后端（可选）：ASP.NET Core Web API + EF Core
+
 - 数据库：SQLite（开发便捷）或 SQL Server（生产可选）
 - AI 供应商：可插拔（OpenAI/Azure OpenAI/本地大模型服务），通过统一 Provider 接口封装
 - 通信：HTTP/JSON + 流式输出（SSE 或流式读取）
@@ -19,7 +19,7 @@ repo-root/
     04-data-model.md
     05-frontend-backend-plan.md
   client/                    # WPF 客户端（已实现：AI 生成、设置持久化）
-  server/                    # ASP.NET Core 后端（可选）
+
 ```
 
 ## 功能概览
@@ -31,8 +31,8 @@ repo-root/
 
 ## 部署建议
 - 客户端：Windows 桌面应用（WPF），通过安装包分发（MSIX/ClickOnce/zip）
-- 后端（可选）：ASP.NET Core 部署于自有服务器或容器，暴露 REST + SSE 接口
-- 配置与持久化：后端使用 `appsettings.json`；客户端使用 SQLite 轻量持久化存储（本地 `AINovelStudio.settings.db`），首启自动从 `appsettings.client.json` 迁移
+
+- 配置与持久化：客户端使用 SQLite 轻量持久化存储（本地 `AINovelStudio.settings.db`），首次启动自动创建并在无记录时从 `appsettings.client.json` 迁移
 
 ## 持久化存储服务（客户端）
 - 模块抽离：引入通用接口 `IPersistenceService` 与实现 `SqlitePersistenceService`，统一提供数据库路径、连接与初始化
@@ -47,14 +47,12 @@ repo-root/
 
 ## 开发里程碑
 1. 文档与架构定稿（当前阶段）
-2. 搭建（可选）后端骨架：ASP.NET Core 实体、仓储、控制器、AI Provider 接口
-3. 搭建 WPF 客户端骨架：窗口/页面、MVVM、数据访问（HttpClient）
-4. 实现内容管理与人物设计的 CRUD
-5. 打通联动上下文与 AI 生成（流式输出/流式读取）
-6. 优化与发布：鉴权、审计、限流、灰度、监控
+2. 搭建 WPF 客户端骨架：窗口/页面、MVVM、模块化服务（持久化、Provider）
+3. 实现内容管理与人物设计的 CRUD（本地 SQLite）
+4. 打通联动上下文与 AI 生成（第三方 API，流式输出/流式读取）
+5. 优化与发布：错误处理、日志、打包与分发
 
-## 运行（后续）
+## 运行
 - 客户端：`cd client && dotnet restore && dotnet run`
-- 后端（可选）：`cd server && dotnet restore && dotnet run`
 
-> 当前仓库已包含客户端代码（WPF），并实现 AI 生成与设置的 SQLite 持久化；后端为可选组件。
+> 当前仓库仅包含客户端（WPF），并实现 AI 生成与设置的 SQLite 持久化；初次启动会自动创建 `AINovelStudio.settings.db`。
