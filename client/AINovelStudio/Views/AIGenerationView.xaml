@@ -13,10 +13,10 @@
         </Grid.RowDefinitions>
 
         <!-- 页面标题 -->
-        <TextBlock Grid.Row="0" Text="AI生成" FontSize="24" FontWeight="Bold" Margin="0,0,0,20"/>
+        <TextBlock Grid.Row="0" Text="AI生成" Style="{StaticResource TitleStyle}" Margin="0,0,0,20"/>
 
         <!-- 功能选择区域 -->
-        <Border Grid.Row="1" Background="#F8F9FA" CornerRadius="8" Padding="20" Margin="0,0,0,20">
+        <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,0,0,20">
             <StackPanel>
                 <TextBlock Text="选择生成类型" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,15"/>
                 
@@ -33,7 +33,7 @@
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                     <TextBlock Text="选择小说：" VerticalAlignment="Center" Margin="0,0,10,0"/>
                     <ComboBox ItemsSource="{Binding Novels}" SelectedItem="{Binding SelectedNovel}" 
-                            DisplayMemberPath="Title" MinWidth="200"/>
+                            DisplayMemberPath="Title" MinWidth="200" Style="{StaticResource ModernComboBoxStyle}"/>
                 </StackPanel>
 
                 <!-- 章节选择（续写和改写时显示） -->
@@ -41,7 +41,7 @@
                           Visibility="{Binding IsChapterSelectionVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <TextBlock Text="选择章节：" VerticalAlignment="Center" Margin="0,0,10,0"/>
                     <ComboBox ItemsSource="{Binding Chapters}" SelectedItem="{Binding SelectedChapter}" 
-                            DisplayMemberPath="Title" MinWidth="200"/>
+                            DisplayMemberPath="Title" MinWidth="200" Style="{StaticResource ModernComboBoxStyle}"/>
                 </StackPanel>
             </StackPanel>
         </Border>
@@ -55,7 +55,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- 左侧：输入区域 -->
-            <Border Grid.Column="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8">
+            <Border Grid.Column="0" Style="{StaticResource CardStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -64,8 +64,8 @@
                     </Grid.RowDefinitions>
 
                     <!-- 输入标题 -->
-                    <Border Grid.Row="0" Background="#F5F5F5" Padding="15,10">
-                        <TextBlock Text="{Binding InputTitle}" FontWeight="SemiBold"/>
+                    <Border Grid.Row="0" Background="{StaticResource HoverBrush}" Padding="15,10">
+                        <TextBlock Text="{Binding InputTitle}" Style="{StaticResource SubtitleStyle}"/>
                     </Border>
 
                     <!-- 输入文本框 -->
@@ -74,21 +74,21 @@
                            Padding="15" BorderThickness="0" FontSize="14"/>
 
                     <!-- 生成按钮和设置 -->
-                    <Border Grid.Row="2" Background="#F5F5F5" Padding="15">
+                    <Border Grid.Row="2" Background="{StaticResource HoverBrush}" Padding="15">
                         <StackPanel>
                             <!-- AI设置 -->
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                 <TextBlock Text="字数限制：" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                <TextBox Text="{Binding WordLimit}" Width="80" Margin="0,0,20,0"/>
+                                <TextBox Text="{Binding WordLimit}" Width="80" Margin="0,0,20,0" Style="{StaticResource ModernTextBoxStyle}"/>
                                 <TextBlock Text="创意度：" VerticalAlignment="Center" Margin="0,0,10,0"/>
-                                <Slider Value="{Binding Creativity}" Minimum="0" Maximum="1" Width="100" 
-                                      TickFrequency="0.1" IsSnapToTickEnabled="True"/>
-                                <TextBlock Text="{Binding Creativity, StringFormat=F1}" VerticalAlignment="Center" Margin="5,0,0,0"/>
+                                <Slider Value="{Binding Creativity}" Minimum="0" Maximum="1" Width="140" 
+                                      TickFrequency="0.1" IsSnapToTickEnabled="True" Style="{StaticResource ModernSliderStyle}"/>
+                                <TextBlock Text="{Binding Creativity, StringFormat=F1}" VerticalAlignment="Center" Margin="8,0,0,0"/>
                             </StackPanel>
 
                             <!-- 生成按钮 -->
                             <Button Content="{Binding GenerateButtonText}" Command="{Binding GenerateCommand}" 
-                                  Style="{StaticResource PrimaryButtonStyle}" HorizontalAlignment="Left"
+                                  Style="{StaticResource PrimaryButtonStyle}" HorizontalAlignment="Left" Margin="0,10,0,0"
                                   IsEnabled="{Binding CanGenerate}"/>
                         </StackPanel>
                     </Border>
@@ -96,7 +96,7 @@
             </Border>
 
             <!-- 右侧：输出区域 -->
-            <Border Grid.Column="2" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8">
+            <Border Grid.Column="2" Style="{StaticResource CardStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -105,11 +105,10 @@
                     </Grid.RowDefinitions>
 
                     <!-- 输出标题 -->
-                    <Border Grid.Row="0" Background="#F5F5F5" Padding="15,10">
+                    <Border Grid.Row="0" Background="{StaticResource HoverBrush}" Padding="15,10">
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="生成结果" FontWeight="SemiBold"/>
-                            <TextBlock Text="{Binding GenerationStatus}" Margin="20,0,0,0" 
-                                     Foreground="{Binding StatusColor}"/>
+                            <TextBlock Text="生成结果" Style="{StaticResource SubtitleStyle}"/>
+                            <TextBlock Text="{Binding GenerationStatus}" Margin="20,0,0,0" Foreground="{Binding StatusColor}"/>
                         </StackPanel>
                     </Border>
 

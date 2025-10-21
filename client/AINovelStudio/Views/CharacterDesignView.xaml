@@ -19,11 +19,12 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             
-            <TextBlock Grid.Column="0" Text="人物设计" FontSize="24" FontWeight="Bold" VerticalAlignment="Center"/>
+            <!-- 页面标题改为统一标题样式 -->
+            <TextBlock Grid.Column="0" Text="人物设计" Style="{StaticResource TitleStyle}"/>
             
             <StackPanel Grid.Column="1" Orientation="Horizontal">
                 <ComboBox ItemsSource="{Binding Novels}" SelectedItem="{Binding SelectedNovel}" 
-                        DisplayMemberPath="Title" MinWidth="150" Margin="0,0,10,0"/>
+                        DisplayMemberPath="Title" MinWidth="180" Margin="0,0,10,0" Style="{StaticResource ModernComboBoxStyle}"/>
                 <Button Content="新建角色" Command="{Binding CreateCharacterCommand}" 
                       Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,10,0"/>
                 <Button Content="刷新" Command="{Binding RefreshCommand}" 
@@ -32,14 +33,14 @@
         </Grid>
 
         <!-- 角色列表 -->
-        <Border Grid.Row="1" Background="#F8F9FA" CornerRadius="8" Padding="15" Margin="0,0,0,20">
+        <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,0,0,20">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
-                <TextBlock Grid.Row="0" Text="角色列表" FontSize="16" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                <TextBlock Grid.Row="0" Text="角色列表" Style="{StaticResource SubtitleStyle}" Margin="0,0,0,10"/>
                 
                 <ItemsControl Grid.Row="1" ItemsSource="{Binding Characters}">
                     <ItemsControl.ItemsPanel>
@@ -49,17 +50,16 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Background="White" BorderBrush="#E0E0E0" BorderThickness="1" 
-                                  CornerRadius="6" Padding="10" Margin="0,0,10,10" MinWidth="120" Cursor="Hand">
+                            <Border Style="{StaticResource CardStyle}" Padding="10" Margin="0,0,10,10" MinWidth="120" Cursor="Hand">
                                 <Border.InputBindings>
                                     <MouseBinding MouseAction="LeftClick" 
                                                 Command="{Binding DataContext.SelectCharacterCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                 CommandParameter="{Binding}"/>
                                 </Border.InputBindings>
                                 <StackPanel>
-                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextAlignment="Center"/>
-                                    <TextBlock Text="{Binding Description}" FontSize="12" Foreground="Gray" 
-                                             TextAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="100"/>
+                                    <TextBlock Text="{Binding Name}" Style="{StaticResource SubtitleStyle}" TextAlignment="Center"/>
+                                    <TextBlock Text="{Binding Description}" Style="{StaticResource SecondaryTextStyle}" 
+                                             TextAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="120"/>
                                 </StackPanel>
                             </Border>
                         </DataTemplate>
@@ -77,7 +77,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- 左侧：基本信息 -->
-            <Border Grid.Column="0" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8">
+            <Border Grid.Column="0" Style="{StaticResource CardStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -86,51 +86,51 @@
                     </Grid.RowDefinitions>
 
                     <!-- 标题 -->
-                    <Border Grid.Row="0" Background="#F5F5F5" Padding="15,10">
-                        <TextBlock Text="基本信息" FontWeight="SemiBold"/>
+                    <Border Grid.Row="0" Background="{StaticResource HoverBrush}" Padding="15,10">
+                        <TextBlock Text="基本信息" Style="{StaticResource SubtitleStyle}"/>
                     </Border>
 
                     <!-- 表单内容 -->
                     <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="15">
                         <StackPanel>
                             <!-- 角色名称 -->
-                            <TextBlock Text="角色名称" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                            <TextBlock Text="角色名称" Style="{StaticResource LabelStyle}" Margin="0,0,0,5"/>
                             <TextBox Text="{Binding SelectedCharacter.Name, UpdateSourceTrigger=PropertyChanged}" 
                                    Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,15"/>
 
                             <!-- 角色描述 -->
-                            <TextBlock Text="角色描述" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                            <TextBlock Text="角色描述" Style="{StaticResource LabelStyle}" Margin="0,0,0,5"/>
                             <TextBox Text="{Binding SelectedCharacter.Description, UpdateSourceTrigger=PropertyChanged}" 
                                    TextWrapping="Wrap" AcceptsReturn="True" Height="80"
                                    Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,15"/>
 
                             <!-- 性格特点 -->
-                            <TextBlock Text="性格特点" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                            <TextBlock Text="性格特点" Style="{StaticResource LabelStyle}" Margin="0,0,0,5"/>
                             <TextBox Text="{Binding SelectedCharacter.Personality, UpdateSourceTrigger=PropertyChanged}" 
                                    TextWrapping="Wrap" AcceptsReturn="True" Height="100"
                                    Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,15"/>
 
                             <!-- 背景故事 -->
-                            <TextBlock Text="背景故事" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                            <TextBlock Text="背景故事" Style="{StaticResource LabelStyle}" Margin="0,0,0,5"/>
                             <TextBox Text="{Binding SelectedCharacter.Background, UpdateSourceTrigger=PropertyChanged}" 
                                    TextWrapping="Wrap" AcceptsReturn="True" Height="120"
                                    Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,15"/>
 
                             <!-- 说话风格 -->
-                            <TextBlock Text="说话风格" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                            <TextBlock Text="说话风格" Style="{StaticResource LabelStyle}" Margin="0,0,0,5"/>
                             <TextBox Text="{Binding SelectedCharacter.SpeakingStyle, UpdateSourceTrigger=PropertyChanged}" 
                                    TextWrapping="Wrap" AcceptsReturn="True" Height="80"
                                    Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,15"/>
 
                             <!-- 标签 -->
-                            <TextBlock Text="标签（用逗号分隔）" FontWeight="SemiBold" Margin="0,0,0,5"/>
+                            <TextBlock Text="标签（用逗号分隔）" Style="{StaticResource LabelStyle}" Margin="0,0,0,5"/>
                             <TextBox Text="{Binding CharacterTagsText, UpdateSourceTrigger=PropertyChanged}" 
                                    Style="{StaticResource ModernTextBoxStyle}" Margin="0,0,0,15"/>
                         </StackPanel>
                     </ScrollViewer>
 
                     <!-- 操作按钮 -->
-                    <Border Grid.Row="2" Background="#F5F5F5" Padding="15">
+                    <Border Grid.Row="2" Background="{StaticResource HoverBrush}" Padding="15">
                         <StackPanel Orientation="Horizontal">
                             <Button Content="保存" Command="{Binding SaveCharacterCommand}" 
                                   Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,10,0"/>
@@ -144,7 +144,7 @@
             </Border>
 
             <!-- 右侧：AI生成和预览 -->
-            <Border Grid.Column="2" Background="White" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8">
+            <Border Grid.Column="2" Style="{StaticResource CardStyle}">
                 <Grid>
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
@@ -154,14 +154,14 @@
                     </Grid.RowDefinitions>
 
                     <!-- 标题 -->
-                    <Border Grid.Row="0" Background="#F5F5F5" Padding="15,10">
-                        <TextBlock Text="AI助手" FontWeight="SemiBold"/>
-                    </Border>
+                    <Border Grid.Row="0" Background="{StaticResource HoverBrush}" Padding="15,10">
+                            <TextBlock Text="AI助手" Style="{StaticResource SubtitleStyle}"/>
+                        </Border>
 
                     <!-- AI生成选项 -->
-                    <Border Grid.Row="1" Padding="15" BorderThickness="0,0,0,1" BorderBrush="#E0E0E0">
+                    <Border Grid.Row="1" Background="{StaticResource HoverBrush}" Padding="15">
                         <StackPanel>
-                            <TextBlock Text="AI生成选项" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                            <TextBlock Text="AI生成选项" Style="{StaticResource LabelStyle}" Margin="0,0,0,10"/>
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                                 <RadioButton Content="生成性格" IsChecked="{Binding IsGeneratePersonality}" 
                                            GroupName="AIGenerate" Margin="0,0,15,0"/>
@@ -181,15 +181,14 @@
                     <!-- AI生成结果 -->
                     <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Padding="15">
                         <StackPanel>
-                            <TextBlock Text="生成结果" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                            <TextBlock Text="生成结果" Style="{StaticResource LabelStyle}" Margin="0,0,0,10"/>
                             <TextBox Text="{Binding AIGeneratedContent}" IsReadOnly="True" 
-                                   TextWrapping="Wrap" Background="#FAFAFA" BorderThickness="1" 
-                                   BorderBrush="#E0E0E0" Padding="10" MinHeight="200"/>
+                                    TextWrapping="Wrap" Style="{StaticResource ModernTextBoxStyle}" MinHeight="200"/>
                         </StackPanel>
                     </ScrollViewer>
 
                     <!-- 应用按钮 -->
-                    <Border Grid.Row="3" Background="#F5F5F5" Padding="15">
+                    <Border Grid.Row="3" Background="{StaticResource HoverBrush}" Padding="15">
                         <StackPanel Orientation="Horizontal">
                             <Button Content="应用到角色" Command="{Binding ApplyAIContentCommand}" 
                                   Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,10,0"
@@ -204,8 +203,7 @@
         </Grid>
 
         <!-- 空状态提示 -->
-        <Border Grid.Row="2" Background="#F8F9FA" CornerRadius="8" Padding="40"
-              Visibility="{Binding IsCharacterSelected, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+        <Border Grid.Row="2" Style="{StaticResource CardStyle}" Padding="40" Visibility="{Binding IsCharacterSelected, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
                 <TextBlock Text="📝" FontSize="48" HorizontalAlignment="Center" Margin="0,0,0,20"/>
                 <TextBlock Text="选择一个角色开始编辑" FontSize="16" HorizontalAlignment="Center" 

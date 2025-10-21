@@ -20,16 +20,8 @@
             </Grid.ColumnDefinitions>
             
             <StackPanel Grid.Column="0" Orientation="Horizontal">
-                <TextBlock Text="📚 小说管理" 
-                          FontSize="24" 
-                          FontWeight="Bold" 
-                          VerticalAlignment="Center"
-                          Foreground="#2C3E50"/>
-                <TextBlock Text="{Binding NovelCount, StringFormat='共 {0} 部小说'}" 
-                          FontSize="14" 
-                          VerticalAlignment="Center"
-                          Foreground="#7F8C8D"
-                          Margin="20,0,0,0"/>
+                <TextBlock Text="📚 小说管理" Style="{StaticResource TitleStyle}"/>
+                <TextBlock Text="{Binding NovelCount, StringFormat='共 {0} 部小说'}" Style="{StaticResource SecondaryTextStyle}" Margin="20,0,0,0"/>
             </StackPanel>
             
             <StackPanel Grid.Column="1" Orientation="Horizontal">
@@ -47,20 +39,7 @@
             <ItemsControl ItemsSource="{Binding Novels}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Background="White" 
-                                BorderBrush="#E8E8E8" 
-                                BorderThickness="1" 
-                                CornerRadius="8" 
-                                Margin="0,0,0,15"
-                                Padding="20">
-                            <Border.Effect>
-                                <DropShadowEffect Color="Gray" 
-                                                Direction="270" 
-                                                ShadowDepth="2" 
-                                                Opacity="0.2" 
-                                                BlurRadius="8"/>
-                            </Border.Effect>
-                            
+                        <Border Style="{StaticResource CardStyle}" Margin="0,0,0,15">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
@@ -74,11 +53,7 @@
                                 </Grid.ColumnDefinitions>
                                 
                                 <!-- 小说标题 -->
-                                <TextBlock Grid.Row="0" Grid.Column="0"
-                                          Text="{Binding Title}" 
-                                          FontSize="18" 
-                                          FontWeight="Bold"
-                                          Foreground="#2C3E50"/>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="{Binding Title}" Style="{StaticResource SubtitleStyle}"/>
                                 
                                 <!-- 状态标签 -->
                                 <Border Grid.Row="0" Grid.Column="1"
@@ -91,12 +66,7 @@
                                 </Border>
                                 
                                 <!-- 描述 -->
-                                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
-                                          Text="{Binding Description}" 
-                                          FontSize="14" 
-                                          Foreground="#7F8C8D"
-                                          TextWrapping="Wrap"
-                                          Margin="0,8,0,0"/>
+                                <TextBlock Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding Description}" Style="{StaticResource BodyStyle}" TextWrapping="Wrap" Margin="0,8,0,0"/>
                                 
                                 <!-- 标签 -->
                                 <ItemsControl Grid.Row="2" Grid.Column="0" Grid.ColumnSpan="2"
@@ -129,15 +99,8 @@
                                     </Grid.ColumnDefinitions>
                                     
                                     <StackPanel Grid.Column="0" Orientation="Horizontal">
-                                        <TextBlock Text="{Binding CreatedAt, StringFormat='创建于 {0:yyyy-MM-dd}'}" 
-                                                  FontSize="12" 
-                                                  Foreground="#95A5A6"
-                                                  VerticalAlignment="Center"/>
-                                        <TextBlock Text="{Binding Chapters.Count, StringFormat='• {0} 章节'}" 
-                                                  FontSize="12" 
-                                                  Foreground="#95A5A6"
-                                                  VerticalAlignment="Center"
-                                                  Margin="10,0,0,0"/>
+                                        <TextBlock Text="{Binding CreatedAt, StringFormat='创建于 {0:yyyy-MM-dd}'}" Style="{StaticResource SecondaryTextStyle}" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding Chapters.Count, StringFormat='• {0} 章节'}" Style="{StaticResource SecondaryTextStyle}" VerticalAlignment="Center" Margin="10,0,0,0"/>
                                     </StackPanel>
                                     
                                     <StackPanel Grid.Column="1" Orientation="Horizontal">

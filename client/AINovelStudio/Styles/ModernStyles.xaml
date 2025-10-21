@@ -248,15 +248,15 @@
                         </Grid.RowDefinitions>
                         <Track Grid.Row="1" x:Name="PART_Track">
                             <Track.DecreaseRepeatButton>
-                                <RepeatButton Style="{StaticResource SliderButtonStyle}"
+                                <RepeatButton Style="{DynamicResource SliderButtonStyle}"
                                             Background="{TemplateBinding Foreground}"/>
                             </Track.DecreaseRepeatButton>
                             <Track.IncreaseRepeatButton>
-                                <RepeatButton Style="{StaticResource SliderButtonStyle}"
+                                <RepeatButton Style="{DynamicResource SliderButtonStyle}"
                                             Background="{TemplateBinding Background}"/>
                             </Track.IncreaseRepeatButton>
                             <Track.Thumb>
-                                <Thumb Style="{StaticResource SliderThumbStyle}"/>
+                                <Thumb Style="{DynamicResource SliderThumbStyle}"/>
                             </Track.Thumb>
                         </Track>
                     </Grid>

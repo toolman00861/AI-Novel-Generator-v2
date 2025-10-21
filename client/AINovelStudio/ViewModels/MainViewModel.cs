@@ -74,7 +74,7 @@ public class MainViewModel : BaseViewModel
             "小说管理" => new NovelManagementView { DataContext = new NovelManagementViewModel() },
             "AI生成" => new AIGenerationView { DataContext = new AIGenerationViewModel() },
             "人物设计" => new Views.CharacterDesignView { DataContext = new CharacterDesignViewModel() },
-            "设置" => CreatePlaceholderView("设置"),
+            "设置" => new SettingsView { DataContext = new SettingsViewModel() },
             _ => CurrentView
         };
     }
