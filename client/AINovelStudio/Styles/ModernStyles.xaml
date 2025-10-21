@@ -95,6 +95,10 @@
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="12,8"/>
         <Setter Property="FontSize" Value="14"/>
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+        <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
+        <Setter Property="TextOptions.TextHintingMode" Value="Fixed"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
@@ -310,7 +314,7 @@
     </Style>
 
     <!-- 标题样式 -->
-    <Style x:Key="TitleStyle" TargetType="TextBlock">
+    <Style x:Key="TitleStyle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
         <Setter Property="FontSize" Value="24"/>
         <Setter Property="FontWeight" Value="Bold"/>
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
@@ -318,7 +322,7 @@
     </Style>
 
     <!-- 副标题样式 -->
-    <Style x:Key="SubtitleStyle" TargetType="TextBlock">
+    <Style x:Key="SubtitleStyle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
         <Setter Property="FontSize" Value="18"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
@@ -326,7 +330,7 @@
     </Style>
 
     <!-- 标签样式 -->
-    <Style x:Key="LabelStyle" TargetType="TextBlock">
+    <Style x:Key="LabelStyle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
@@ -334,16 +338,24 @@
     </Style>
 
     <!-- 正文样式 -->
-    <Style x:Key="BodyStyle" TargetType="TextBlock">
+    <Style x:Key="BodyStyle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
     </Style>
 
     <!-- 次要文本样式 -->
-    <Style x:Key="SecondaryTextStyle" TargetType="TextBlock">
+    <Style x:Key="SecondaryTextStyle" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+    </Style>
+
+    <!-- 全局文本清晰设置 -->
+    <Style TargetType="TextBlock">
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+        <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
+        <Setter Property="TextOptions.TextHintingMode" Value="Fixed"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
     </Style>
 
 </ResourceDictionary>

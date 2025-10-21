@@ -8,9 +8,13 @@
         mc:Ignorable="d"
         Title="AI小说工坊" Height="800" Width="1200"
         WindowStartupLocation="CenterScreen"
-        Background="#F5F5F5">
+        Background="#F5F5F5"
+        UseLayoutRounding="True" SnapsToDevicePixels="True"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
+        TextOptions.TextHintingMode="Fixed">
     
-    <Grid Background="{StaticResource BackgroundBrush}">
+    <Grid Background="{StaticResource BackgroundBrush}" RenderOptions.ClearTypeHint="Enabled" SnapsToDevicePixels="True">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="250"/>
             <ColumnDefinition Width="*"/>

@@ -110,6 +110,10 @@
         <Setter Property="Padding" Value="10,8"/>
         <Setter Property="Margin" Value="5"/>
         <Setter Property="FontSize" Value="14"/>
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+        <Setter Property="TextOptions.TextRenderingMode" Value="ClearType"/>
+        <Setter Property="TextOptions.TextHintingMode" Value="Fixed"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
