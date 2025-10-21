@@ -5,6 +5,10 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
 
+using AINovelStudio.Services;
+using System.Threading.Tasks;
+using System.Threading;
+
 namespace AINovelStudio.ViewModels;
 
 /// <summary>
@@ -24,6 +28,9 @@ public class AIGenerationViewModel : BaseViewModel
     private string _generationStatus = "就绪";
     private bool _isGenerating;
 
+    private readonly AITextGenerationService _aiService;
+    private readonly SettingsService _settingsService;
+
     public AIGenerationViewModel()
     {
         Novels = new ObservableCollection<Novel>();
@@ -33,6 +40,13 @@ public class AIGenerationViewModel : BaseViewModel
         CopyCommand = new RelayCommand(CopyOutput);
         SaveToChapterCommand = new RelayCommand(SaveToChapter);
         RegenerateCommand = new RelayCommand(Regenerate);
+
+        _settingsService = new SettingsService();
+        _aiService = new AITextGenerationService(_settingsService);
+
+        var defaults = _settingsService.Load().GenerationDefaults;
+        _wordLimit = defaults.WordLimit;
+        _creativity = defaults.Temperature;
 
         LoadSampleData();
     }
@@ -365,15 +379,16 @@ public class AIGenerationViewModel : BaseViewModel
 
         try
         {
-            // 模拟AI生成过程
-            await Task.Delay(2000);
+            // 构建提示词并调用真实 AI 服务
+            var prompt = BuildPrompt();
+            var settings = _settingsService.Load();
+            var maxTokens = settings.GenerationDefaults.MaxTokens;
 
-            // 根据生成类型生成不同的内容
-            string generatedContent = IsContinueWritingSelected ? GenerateContinuation() :
-                                    IsRewriteSelected ? GenerateRewrite() :
-                                    IsOutlineSelected ? GenerateOutline() : string.Empty;
+            var generatedContent = await _aiService.GenerateAsync(prompt, _creativity, maxTokens, CancellationToken.None);
 
-            OutputText = generatedContent;
+            OutputText = string.IsNullOrWhiteSpace(generatedContent)
+                ? "（AI接口返回空结果，请检查模型与参数设置）"
+                : generatedContent;
             GenerationStatus = "生成完成";
         }
         catch (Exception ex)
@@ -390,52 +405,25 @@ public class AIGenerationViewModel : BaseViewModel
     }
 
     /// <summary>
-    /// 生成续写内容
+    /// 构建不同模式的提示词
     /// </summary>
-    private string GenerateContinuation()
+    private string BuildPrompt()
     {
-        return $"基于前文内容，AI续写如下：\n\n" +
-               $"故事继续发展，主人公面临新的挑战。在经历了前面的种种困难后，" +
-               $"他逐渐成长起来，开始展现出不同寻常的能力。\n\n" +
-               $"这时，一个神秘的人物出现了，为故事带来了新的转折...\n\n" +
-               $"（这是AI生成的示例内容，实际使用时会调用真实的AI接口）";
-    }
+        var header = IsContinueWritingSelected
+            ? $"请根据下文进行中文续写，保持文风一致，控制在约{WordLimit}字："
+            : IsRewriteSelected
+                ? $"请优化改写下文（不改变原意），使语言更流畅，控制在约{WordLimit}字："
+                : IsOutlineSelected
+                    ? $"请根据以下设定生成小说大纲（包含关键情节节点），控制在约{WordLimit}字："
+                    : "请根据下文生成内容：";
 
-    /// <summary>
-    /// 生成改写内容
-    /// </summary>
-    private string GenerateRewrite()
-    {
-        return $"AI改写版本：\n\n" +
-               $"原文经过AI优化后，语言更加流畅，情节更加紧凑。" +
-               $"人物形象更加鲜明，对话更加生动自然。\n\n" +
-               $"改写后的内容保持了原文的核心思想，但在表达方式上更加精炼有力...\n\n" +
-               $"（这是AI生成的示例内容，实际使用时会调用真实的AI接口）";
-    }
+        var context = InputText ?? string.Empty;
 
-    /// <summary>
-    /// 生成大纲内容
-    /// </summary>
-    private string GenerateOutline()
-    {
-        return $"小说大纲：\n\n" +
-               $"第一部分：开端\n" +
-               $"- 主人公背景介绍\n" +
-               $"- 引发事件\n" +
-               $"- 初步冲突\n\n" +
-               $"第二部分：发展\n" +
-               $"- 主要矛盾展开\n" +
-               $"- 人物关系复杂化\n" +
-               $"- 多重困难叠加\n\n" +
-               $"第三部分：高潮\n" +
-               $"- 矛盾激化\n" +
-               $"- 关键选择\n" +
-               $"- 转折点\n\n" +
-               $"第四部分：结局\n" +
-               $"- 问题解决\n" +
-               $"- 人物成长\n" +
-               $"- 故事收尾\n\n" +
-               $"（这是AI生成的示例大纲，实际使用时会根据具体设定生成）";
+        // 可附加章节与小说标题等上下文（如有选择章节）
+        var chapterInfo = SelectedChapter != null ? $"\n\n章节：{SelectedChapter.Title}" : string.Empty;
+        var novelInfo = SelectedNovel != null ? $"\n小说：{SelectedNovel.Title}" : string.Empty;
+
+        return $"{header}\n\n{context}{novelInfo}{chapterInfo}";
     }
 
     /// <summary>
