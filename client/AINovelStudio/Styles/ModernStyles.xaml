@@ -5,15 +5,28 @@
     <SolidColorBrush x:Key="PrimaryBrush" Color="#2196F3"/>
     <SolidColorBrush x:Key="PrimaryDarkBrush" Color="#1976D2"/>
     <SolidColorBrush x:Key="AccentBrush" Color="#FF4081"/>
-    <SolidColorBrush x:Key="BackgroundBrush" Color="#FAFAFA"/>
+    <SolidColorBrush x:Key="BackgroundBrush" Color="#F6F7FB"/>
     <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#212121"/>
-    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#757575"/>
-    <SolidColorBrush x:Key="BorderBrush" Color="#E0E0E0"/>
-    <SolidColorBrush x:Key="HoverBrush" Color="#F5F5F5"/>
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="#1F2933"/>
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="#64748B"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="#E0E6F0"/>
+    <SolidColorBrush x:Key="HoverBrush" Color="#F0F4FF"/>
     <SolidColorBrush x:Key="SuccessBrush" Color="#4CAF50"/>
     <SolidColorBrush x:Key="WarningBrush" Color="#FF9800"/>
     <SolidColorBrush x:Key="ErrorBrush" Color="#F44336"/>
+    <LinearGradientBrush x:Key="SidebarGradientBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="#1B4DE0" Offset="0"/>
+        <GradientStop Color="#3A7BFF" Offset="1"/>
+    </LinearGradientBrush>
+    <LinearGradientBrush x:Key="AccentGradientBrush" StartPoint="0,0" EndPoint="1,1">
+        <GradientStop Color="#EEF3FF" Offset="0"/>
+        <GradientStop Color="#FFFFFF" Offset="1"/>
+    </LinearGradientBrush>
+
+    <Duration x:Key="FastDuration">0:0:0.18</Duration>
+    <Duration x:Key="NormalDuration">0:0:0.35</Duration>
+    <CubicEase x:Key="EaseOut" EasingMode="EaseOut"/>
+    <CubicEase x:Key="EaseInOut" EasingMode="EaseInOut"/>
 
     <!-- 现代化按钮样式 -->
     <Style x:Key="ModernButtonStyle" TargetType="Button">
@@ -25,24 +38,90 @@
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="FontWeight" Value="Normal"/>
         <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border Background="{TemplateBinding Background}"
+                    <Border x:Name="Root"
+                            Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="4">
+                            CornerRadius="6"
+                            Padding="{TemplateBinding Padding}"
+                            RenderTransformOrigin="0.5,0.5">
+                        <Border.RenderTransform>
+                            <ScaleTransform x:Name="scale" ScaleX="1" ScaleY="1"/>
+                        </Border.RenderTransform>
                         <ContentPresenter HorizontalAlignment="Center"
-                                        VerticalAlignment="Center"
-                                        Margin="{TemplateBinding Padding}"/>
+                                          VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
+                        <EventTrigger RoutedEvent="MouseEnter">
+                            <BeginStoryboard x:Name="MouseEnterStoryboard">
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="scale"
+                                                     Storyboard.TargetProperty="ScaleX"
+                                                     To="1.05"
+                                                     Duration="{StaticResource FastDuration}"
+                                                     EasingFunction="{StaticResource EaseOut}"/>
+                                    <DoubleAnimation Storyboard.TargetName="scale"
+                                                     Storyboard.TargetProperty="ScaleY"
+                                                     To="1.05"
+                                                     Duration="{StaticResource FastDuration}"
+                                                     EasingFunction="{StaticResource EaseOut}"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                        <EventTrigger RoutedEvent="MouseLeave">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="scale"
+                                                     Storyboard.TargetProperty="ScaleX"
+                                                     To="1"
+                                                     Duration="{StaticResource FastDuration}"
+                                                     EasingFunction="{StaticResource EaseOut}"/>
+                                    <DoubleAnimation Storyboard.TargetName="scale"
+                                                     Storyboard.TargetProperty="ScaleY"
+                                                     To="1"
+                                                     Duration="{StaticResource FastDuration}"
+                                                     EasingFunction="{StaticResource EaseOut}"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter Property="Background" Value="{StaticResource HoverBrush}"/>
+                            <Setter TargetName="Root" Property="Background" Value="{StaticResource HoverBrush}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter Property="Background" Value="{StaticResource BorderBrush}"/>
+                            <Setter TargetName="Root" Property="Background" Value="{StaticResource BorderBrush}"/>
                         </Trigger>
+                        <EventTrigger RoutedEvent="PreviewMouseLeftButtonDown">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="scale"
+                                                     Storyboard.TargetProperty="ScaleX"
+                                                     To="0.96"
+                                                     Duration="{StaticResource FastDuration}"/>
+                                    <DoubleAnimation Storyboard.TargetName="scale"
+                                                     Storyboard.TargetProperty="ScaleY"
+                                                     To="0.96"
+                                                     Duration="{StaticResource FastDuration}"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                        <EventTrigger RoutedEvent="PreviewMouseLeftButtonUp">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="scale"
+                                                     Storyboard.TargetProperty="ScaleX"
+                                                     To="1.05"
+                                                     Duration="{StaticResource FastDuration}"/>
+                                    <DoubleAnimation Storyboard.TargetName="scale"
+                                                     Storyboard.TargetProperty="ScaleY"
+                                                     To="1.05"
+                                                     Duration="{StaticResource FastDuration}"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.6"/>
                         </Trigger>
@@ -306,11 +385,73 @@
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="8"/>
         <Setter Property="Padding" Value="16"/>
+        <Setter Property="Opacity" Value="0"/>
+        <Setter Property="RenderTransformOrigin" Value="0.5,0.5"/>
+        <Setter Property="RenderTransform">
+            <Setter.Value>
+                <TransformGroup>
+                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                    <TranslateTransform Y="24"/>
+                </TransformGroup>
+            </Setter.Value>
+        </Setter>
         <Setter Property="Effect">
             <Setter.Value>
                 <DropShadowEffect Color="Black" Opacity="0.1" ShadowDepth="2" BlurRadius="8"/>
             </Setter.Value>
         </Setter>
+        <Style.Triggers>
+            <EventTrigger RoutedEvent="Loaded">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                         To="1"
+                                         Duration="{StaticResource NormalDuration}"
+                                         EasingFunction="{StaticResource EaseInOut}"/>
+                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)"
+                                         To="0"
+                                         Duration="{StaticResource NormalDuration}"
+                                         EasingFunction="{StaticResource EaseOut}"/>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+            <EventTrigger RoutedEvent="MouseEnter">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
+                                         To="1.02"
+                                         Duration="{StaticResource FastDuration}"
+                                         EasingFunction="{StaticResource EaseOut}"/>
+                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
+                                         To="1.02"
+                                         Duration="{StaticResource FastDuration}"
+                                         EasingFunction="{StaticResource EaseOut}"/>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+            <EventTrigger RoutedEvent="MouseLeave">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
+                                         To="1"
+                                         Duration="{StaticResource FastDuration}"
+                                         EasingFunction="{StaticResource EaseOut}"/>
+                        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
+                                         To="1"
+                                         Duration="{StaticResource FastDuration}"
+                                         EasingFunction="{StaticResource EaseOut}"/>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{StaticResource AccentGradientBrush}"/>
+                <Setter Property="Effect">
+                    <Setter.Value>
+                        <DropShadowEffect Color="Black" Opacity="0.18" ShadowDepth="6" BlurRadius="18"/>
+                    </Setter.Value>
+                </Setter>
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
     <!-- 标题样式 -->

@@ -4,46 +4,100 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewmodels="clr-namespace:AINovelStudio.ViewModels"
-        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
         mc:Ignorable="d"
-        Title="AI小说工坊" Height="800" Width="1200"
+        Title="AI小说工坊"
+        Height="800"
+        Width="1200"
         WindowStartupLocation="CenterScreen"
-        Background="#F5F5F5"
-        UseLayoutRounding="True" SnapsToDevicePixels="True"
+        Background="{StaticResource BackgroundBrush}"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
         TextOptions.TextHintingMode="Fixed">
-    
-    <Grid Background="{StaticResource BackgroundBrush}" RenderOptions.ClearTypeHint="Enabled" SnapsToDevicePixels="True">
+
+    <Grid Opacity="0"
+          RenderOptions.ClearTypeHint="Enabled"
+          SnapsToDevicePixels="True">
+        <Grid.RenderTransform>
+            <TranslateTransform Y="28"/>
+        </Grid.RenderTransform>
+        <Grid.Triggers>
+            <EventTrigger RoutedEvent="Loaded">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                         To="1"
+                                         Duration="{StaticResource NormalDuration}"
+                                         EasingFunction="{StaticResource EaseInOut}"/>
+                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TranslateTransform.Y)"
+                                         To="0"
+                                         Duration="{StaticResource NormalDuration}"
+                                         EasingFunction="{StaticResource EaseOut}"/>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Grid.Triggers>
+
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="250"/>
+            <ColumnDefinition Width="260"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        
+
         <!-- 侧边栏 -->
-        <Border Grid.Column="0" Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0">
-            <StackPanel Margin="0,20,0,0">
-                <!-- 应用标题 -->
-                <TextBlock Text="AI小说工作室" FontSize="20" FontWeight="Bold" 
-                          Foreground="{StaticResource TextPrimaryBrush}" 
-                          HorizontalAlignment="Center" Margin="0,0,0,30"/>
-                
-                <!-- 导航菜单 -->
+        <Border Grid.Column="0"
+                Background="{StaticResource SidebarGradientBrush}"
+                Padding="0,32"
+                BorderBrush="#112860"
+                BorderThickness="0,0,1,0">
+            <Border.Effect>
+                <DropShadowEffect Color="#0A1F52" Opacity="0.35" ShadowDepth="0" BlurRadius="24"/>
+            </Border.Effect>
+
+            <StackPanel>
+                <StackPanel Margin="28,0,28,28">
+                    <TextBlock Text="AI Novel Studio"
+                               FontSize="22"
+                               FontWeight="Bold"
+                               Foreground="White"/>
+                    <TextBlock Text="智能创作与管理中心"
+                               FontSize="12"
+                               Foreground="#DCE5FF"
+                               Margin="0,6,0,0"/>
+                    <Rectangle Height="1"
+                               Fill="#3F5FD8"
+                               Opacity="0.5"
+                               Margin="0,18,0,0"/>
+                </StackPanel>
+
                 <StackPanel>
-                    <Button Content="小说管理" Style="{StaticResource ModernButtonStyle}" 
-                           Margin="10,5" Command="{Binding NavigateCommand}" CommandParameter="小说管理"/>
-                    <Button Content="AI生成" Style="{StaticResource ModernButtonStyle}" 
-                           Margin="10,5" Command="{Binding NavigateCommand}" CommandParameter="AI生成"/>
-                    <Button Content="人物设计" Style="{StaticResource ModernButtonStyle}" 
-                           Margin="10,5" Command="{Binding NavigateCommand}" CommandParameter="人物设计"/>
-                    <Button Content="设置" Style="{StaticResource ModernButtonStyle}" 
-                           Margin="10,5" Command="{Binding NavigateCommand}" CommandParameter="设置"/>
+                    <Button Content="小说管理"
+                            Style="{StaticResource NavigationButtonStyle}"
+                            Command="{Binding NavigateCommand}"
+                            CommandParameter="小说管理"/>
+                    <Button Content="AI生成"
+                            Style="{StaticResource NavigationButtonStyle}"
+                            Command="{Binding NavigateCommand}"
+                            CommandParameter="AI生成"/>
+                    <Button Content="人物设计"
+                            Style="{StaticResource NavigationButtonStyle}"
+                            Command="{Binding NavigateCommand}"
+                            CommandParameter="人物设计"/>
+                    <Button Content="设置"
+                            Style="{StaticResource NavigationButtonStyle}"
+                            Command="{Binding NavigateCommand}"
+                            CommandParameter="设置"/>
                 </StackPanel>
             </StackPanel>
         </Border>
-        
-        <!-- 主内容区域 -->
-        <Border Grid.Column="1" Background="{StaticResource BackgroundBrush}" Padding="20">
+
+        <!-- 主内容区 -->
+        <Border Grid.Column="1"
+                Background="{StaticResource AccentGradientBrush}"
+                Padding="32">
+            <Border.Effect>
+                <DropShadowEffect Color="#1A3A6D" Opacity="0.08" ShadowDepth="6" BlurRadius="18"/>
+            </Border.Effect>
             <ContentPresenter Content="{Binding CurrentView}"/>
         </Border>
     </Grid>

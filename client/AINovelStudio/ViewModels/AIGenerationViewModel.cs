@@ -1,4 +1,4 @@
-using AINovelStudio.Commands;
+﻿using AINovelStudio.Commands;
 using AINovelStudio.Models;
 using System.Collections.ObjectModel;
 using System.Windows;

@@ -11,7 +11,7 @@ namespace AINovelStudio.Services
     {
         private readonly IPersistenceService _persistence;
         private readonly string _jsonPath;
-        private static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
+        private static readonly JsonSerializerOptions JsonOptions = new()
         {
             WriteIndented = true
         };

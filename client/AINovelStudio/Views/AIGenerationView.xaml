@@ -5,7 +5,26 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="800">
-    <Grid Margin="20">
+    <Grid Margin="20" Opacity="0">
+        <Grid.RenderTransform>
+            <TranslateTransform Y="24"/>
+        </Grid.RenderTransform>
+        <Grid.Triggers>
+            <EventTrigger RoutedEvent="Loaded">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                         To="1"
+                                         Duration="{StaticResource NormalDuration}"
+                                         EasingFunction="{StaticResource EaseInOut}"/>
+                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TranslateTransform.Y)"
+                                         To="0"
+                                         Duration="{StaticResource NormalDuration}"
+                                         EasingFunction="{StaticResource EaseOut}"/>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Grid.Triggers>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -13,7 +32,11 @@
         </Grid.RowDefinitions>
 
         <!-- 页面标题 -->
-        <TextBlock Grid.Row="0" Text="AI生成" Style="{StaticResource TitleStyle}" Margin="0,0,0,20"/>
+        <StackPanel Grid.Row="0" Margin="0,0,0,20">
+            <TextBlock Text="✨ AI 文本生成" Style="{StaticResource TitleStyle}"/>
+            <TextBlock Text="选择合适的模式与上下文，快速生成高质量片段"
+                       Style="{StaticResource SecondaryTextStyle}" Margin="0,4,0,0"/>
+        </StackPanel>
 
         <!-- 功能选择区域 -->
         <Border Grid.Row="1" Style="{StaticResource CardStyle}" Margin="0,0,0,20">
@@ -119,7 +142,7 @@
                            Background="#FAFAFA"/>
 
                     <!-- 操作按钮 -->
-                    <Border Grid.Row="2" Background="#F5F5F5" Padding="15">
+                    <Border Grid.Row="2" Background="{StaticResource HoverBrush}" Padding="15">
                         <StackPanel Orientation="Horizontal">
                             <Button Content="复制" Command="{Binding CopyCommand}" 
                                   Style="{StaticResource SecondaryButtonStyle}" Margin="0,0,10,0"

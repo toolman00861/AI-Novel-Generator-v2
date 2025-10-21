@@ -5,7 +5,26 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="800">
-    <Grid Margin="20">
+    <Grid Margin="20" Opacity="0">
+        <Grid.RenderTransform>
+            <TranslateTransform Y="24"/>
+        </Grid.RenderTransform>
+        <Grid.Triggers>
+            <EventTrigger RoutedEvent="Loaded">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                         To="1"
+                                         Duration="{StaticResource NormalDuration}"
+                                         EasingFunction="{StaticResource EaseInOut}"/>
+                        <DoubleAnimation Storyboard.TargetProperty="RenderTransform.(TranslateTransform.Y)"
+                                         To="0"
+                                         Duration="{StaticResource NormalDuration}"
+                                         EasingFunction="{StaticResource EaseOut}"/>
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Grid.Triggers>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
@@ -19,15 +38,18 @@
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
             
-            <!-- 页面标题改为统一标题样式 -->
-            <TextBlock Grid.Column="0" Text="人物设计" Style="{StaticResource TitleStyle}"/>
+            <StackPanel Grid.Column="0">
+                <TextBlock Text="🎭 人物设计工作台" Style="{StaticResource TitleStyle}"/>
+                <TextBlock Text="集中管理角色画像、性格标签与 AI 辅助优化"
+                           Style="{StaticResource SecondaryTextStyle}"/>
+            </StackPanel>
             
             <StackPanel Grid.Column="1" Orientation="Horizontal">
                 <ComboBox ItemsSource="{Binding Novels}" SelectedItem="{Binding SelectedNovel}" 
-                        DisplayMemberPath="Title" MinWidth="180" Margin="0,0,10,0" Style="{StaticResource ModernComboBoxStyle}"/>
-                <Button Content="新建角色" Command="{Binding CreateCharacterCommand}" 
-                      Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,10,0"/>
-                <Button Content="刷新" Command="{Binding RefreshCommand}" 
+                        DisplayMemberPath="Title" MinWidth="200" Margin="0,0,12,0" Style="{StaticResource ModernComboBoxStyle}"/>
+                <Button Content="➕ 新建角色" Command="{Binding CreateCharacterCommand}" 
+                      Style="{StaticResource PrimaryButtonStyle}" Margin="0,0,12,0"/>
+                <Button Content="🔁 刷新" Command="{Binding RefreshCommand}" 
                       Style="{StaticResource SecondaryButtonStyle}"/>
             </StackPanel>
         </Grid>
