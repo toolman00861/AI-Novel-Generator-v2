@@ -21,7 +21,9 @@
         <!-- 常规设置 -->
         <Border Grid.Row="1" Grid.Column="0" Style="{StaticResource CardStyle}" Margin="0,10,10,0">
             <StackPanel>
-                <TextBlock Text="常规" Style="{StaticResource SubtitleStyle}"/>
+                <Border Background="{StaticResource HoverBrush}" CornerRadius="6" Padding="8" Margin="0,0,0,8">
+                    <TextBlock Text="常规" Style="{StaticResource SubtitleStyle}"/>
+                </Border>
 
                 <TextBlock Text="ApiBase" Style="{StaticResource LabelStyle}"/>
                 <TextBox Style="{StaticResource ModernTextBoxStyle}" Text="{Binding ApiBase, UpdateSourceTrigger=PropertyChanged}"/>
@@ -51,44 +53,45 @@
                     </StackPanel>
                 </Grid>
 
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
-                    <Button Content="重置" Style="{StaticResource ModernButtonStyle}" Command="{Binding ResetCommand}"/>
-                    <Button Content="保存" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding SaveCommand}"/>
-                </StackPanel>
+                <Border Background="{StaticResource HoverBrush}" CornerRadius="6" Padding="8" Margin="0,16,0,0">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="重置" Style="{StaticResource ModernButtonStyle}" Command="{Binding ResetCommand}"/>
+                        <Button Content="保存" Style="{StaticResource PrimaryButtonStyle}" Command="{Binding SaveCommand}"/>
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </Border>
 
         <!-- 模型供应商设置 -->
         <Border Grid.Row="1" Grid.Column="1" Style="{StaticResource CardStyle}" Margin="10,10,0,0">
             <StackPanel>
-                <TextBlock Text="模型供应商（Provider）" Style="{StaticResource SubtitleStyle}"/>
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
-                        <TextBlock Text="Vendor" Style="{StaticResource LabelStyle}"/>
-                        <ComboBox Style="{StaticResource ModernComboBoxStyle}" SelectedItem="{Binding Vendor}">
-                            <ComboBoxItem Content="openai"/>
-                            <ComboBoxItem Content="azure"/>
-                            <ComboBoxItem Content="openrouter"/>
-                            <ComboBoxItem Content="custom"/>
-                        </ComboBox>
-                        <TextBlock Text="BaseUrl" Style="{StaticResource LabelStyle}" Margin="0,10,0,0"/>
-                        <TextBox Style="{StaticResource ModernTextBoxStyle}" Text="{Binding BaseUrl, UpdateSourceTrigger=PropertyChanged}"/>
-                    </StackPanel>
-                    <StackPanel Grid.Column="1">
-                        <TextBlock Text="ApiKey" Style="{StaticResource LabelStyle}"/>
-                        <TextBox Style="{StaticResource ModernTextBoxStyle}" Text="{Binding ApiKey, UpdateSourceTrigger=PropertyChanged}"/>
-                        <TextBlock Text="DefaultModel" Style="{StaticResource LabelStyle}" Margin="0,10,0,0"/>
-                        <TextBox Style="{StaticResource ModernTextBoxStyle}" Text="{Binding DefaultModel, UpdateSourceTrigger=PropertyChanged}"/>
-                    </StackPanel>
-                </Grid>
+                <Border Background="{StaticResource HoverBrush}" CornerRadius="6" Padding="8" Margin="0,0,0,8">
+                    <TextBlock Text="模型供应商（Provider）" Style="{StaticResource SubtitleStyle}"/>
+                </Border>
+                <StackPanel Margin="0,4,0,0">
+                    <TextBlock Text="Vendor" Style="{StaticResource LabelStyle}"/>
+                    <ComboBox Style="{StaticResource ModernComboBoxStyle}" SelectedItem="{Binding Vendor}">
+                        <ComboBoxItem Content="openai"/>
+                        <ComboBoxItem Content="azure"/>
+                        <ComboBoxItem Content="openrouter"/>
+                        <ComboBoxItem Content="custom"/>
+                    </ComboBox>
 
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
-                    <Button Content="测试连接" Style="{StaticResource ModernButtonStyle}" Command="{Binding TestCommand}"/>
+                    <TextBlock Text="BaseUrl" Style="{StaticResource LabelStyle}" Margin="0,12,0,0"/>
+                    <TextBox Style="{StaticResource ModernTextBoxStyle}" Text="{Binding BaseUrl, UpdateSourceTrigger=PropertyChanged}"/>
+
+                    <TextBlock Text="ApiKey" Style="{StaticResource LabelStyle}" Margin="0,12,0,0"/>
+                    <TextBox Style="{StaticResource ModernTextBoxStyle}" Text="{Binding ApiKey, UpdateSourceTrigger=PropertyChanged}"/>
+
+                    <TextBlock Text="DefaultModel" Style="{StaticResource LabelStyle}" Margin="0,12,0,0"/>
+                    <TextBox Style="{StaticResource ModernTextBoxStyle}" Text="{Binding DefaultModel, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
+
+                <Border Background="{StaticResource HoverBrush}" CornerRadius="6" Padding="8" Margin="0,16,0,0">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button Content="测试连接" Style="{StaticResource ModernButtonStyle}" Command="{Binding TestCommand}"/>
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </Border>
     </Grid>
