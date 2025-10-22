@@ -482,12 +482,12 @@ public class AIGenerationViewModel : BaseViewModel
     private string BuildPrompt()
     {
         var header = IsContinueWritingSelected
-            ? $"请根据下文进行中文续写，保持文风一致，控制在约{WordLimit}字："
+            ? $"你是一位专业的小说作家。请直接续写下面的小说内容，保持文风一致，语言生动流畅，约{WordLimit}字。不要分析或解释，直接输出小说正文："
             : IsRewriteSelected
-                ? $"请优化改写下文（不改变原意），使语言更流畅，控制在约{WordLimit}字："
+                ? $"你是一位专业的小说作家。请直接改写下面的小说内容，使语言更加生动流畅，保持原意，约{WordLimit}字。不要分析或解释，直接输出改写后的小说正文："
                 : IsOutlineSelected
-                    ? $"请根据以下设定生成小说大纲（包含关键情节节点），控制在约{WordLimit}字："
-                    : "请根据下文生成内容：";
+                    ? $"你是一位专业的小说作家。请根据以下设定直接生成详细的小说大纲，包含具体的情节发展和关键场景，约{WordLimit}字。不要分析或解释，直接输出大纲内容："
+                    : "你是一位专业的小说作家。请直接生成小说内容，不要分析或解释：";
 
         var context = InputText ?? string.Empty;
 

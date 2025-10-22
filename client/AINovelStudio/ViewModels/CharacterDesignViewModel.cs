@@ -472,11 +472,14 @@ public class CharacterDesignViewModel : BaseViewModel
             var maxTokens = settings.GenerationDefaults.MaxTokens;
             var temperature = settings.GenerationDefaults.Temperature;
 
+            // 构建专业的提示词
+            var prompt = BuildAIPrompt();
+
             // 根据设置选择使用流式生成或普通生成
             if (settings.GenerationDefaults.UseStreaming)
             {
                 // 使用流式生成
-                await _aiService.GenerateStreamAsync(AIPrompt, temperature, maxTokens, 
+                await _aiService.GenerateStreamAsync(prompt, temperature, maxTokens, 
                     chunk =>
                     {
                         // 在UI线程上更新输出文本，并清理格式
@@ -491,7 +494,7 @@ public class CharacterDesignViewModel : BaseViewModel
             else
             {
                 // 使用普通生成
-                var result = await _aiService.GenerateAsync(AIPrompt, temperature, maxTokens, CancellationToken.None).ConfigureAwait(false);
+                var result = await _aiService.GenerateAsync(prompt, temperature, maxTokens, CancellationToken.None).ConfigureAwait(false);
                 AIGeneratedContent = CleanGeneratedText(result);
             }
 
@@ -508,6 +511,32 @@ public class CharacterDesignViewModel : BaseViewModel
         {
             _isGenerating = false;
             OnPropertyChanged(nameof(CanGenerateWithAI));
+        }
+    }
+
+    /// <summary>
+    /// 构建AI提示词
+    /// </summary>
+    private string BuildAIPrompt()
+    {
+        var basePrompt = AIPrompt ?? string.Empty;
+        var characterInfo = SelectedCharacter != null ? $"\n角色名：{SelectedCharacter.Name}" : string.Empty;
+
+        if (IsGeneratePersonality)
+        {
+            return $"你是一位专业的小说作家和角色设计师。请根据以下要求直接生成角色的性格特点，要具体生动，不要分析或解释：\n\n{basePrompt}{characterInfo}\n\n请直接输出角色的性格特点：";
+        }
+        else if (IsGenerateBackground)
+        {
+            return $"你是一位专业的小说作家和角色设计师。请根据以下要求直接生成角色的背景故事，要详细生动，不要分析或解释：\n\n{basePrompt}{characterInfo}\n\n请直接输出角色的背景故事：";
+        }
+        else if (IsGenerateDialogue)
+        {
+            return $"你是一位专业的小说作家和角色设计师。请根据以下要求直接生成角色的说话风格和对话示例，要生动自然，不要分析或解释：\n\n{basePrompt}{characterInfo}\n\n请直接输出角色的说话风格和对话示例：";
+        }
+        else
+        {
+            return $"你是一位专业的小说作家和角色设计师。请根据以下要求直接生成角色相关内容，不要分析或解释：\n\n{basePrompt}{characterInfo}";
         }
     }
 

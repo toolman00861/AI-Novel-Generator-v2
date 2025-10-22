@@ -271,7 +271,7 @@ namespace AINovelStudio.Services
             }
 
             // openai / openrouter
-            if (vendor == "openai" || vendor == "openrouter")
+            if (vendor == "openai" || vendor == "openrouter" || (vendor == "custom" && (trimmed.Contains("openai.com") || trimmed.Contains("openrouter.ai"))))
             {
                 if (trimmed.EndsWith("/chat/completions", StringComparison.OrdinalIgnoreCase))
                 {
