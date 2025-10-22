@@ -282,8 +282,8 @@ namespace AINovelStudio.Services
         /// <summary>
         /// 获取项目根目录
         /// </summary>
-        /// <returns>项目根目录路径，如果找不到则返回null</returns>
-        private static string? GetProjectRootDirectory()
+        /// <returns>项目根目录路径，如果找不到则返回空字符串</returns>
+        private static string GetProjectRootDirectory()
         {
             try
             {
@@ -306,9 +306,10 @@ namespace AINovelStudio.Services
             catch
             {
                 // 忽略异常，返回null
+                return "";
             }
             
-            return null;
+            return "";
         }
 
         /// <summary>

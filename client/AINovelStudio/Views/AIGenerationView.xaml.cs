@@ -11,4 +11,13 @@ public partial class AIGenerationView : UserControl
     {
         InitializeComponent();
     }
+
+    // 新增：输出文本变更时自动滚动到底部，便于观看流式内容
+    private void OutputTextBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (sender is TextBox tb)
+        {
+            tb.ScrollToEnd();
+        }
+    }
 }

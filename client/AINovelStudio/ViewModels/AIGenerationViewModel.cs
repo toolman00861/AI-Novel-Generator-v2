@@ -9,6 +9,8 @@ using System.Linq;
 using AINovelStudio.Services;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Text; // 新增：用于流式缓冲
+using System.Windows.Threading; // 新增：用于UI定时刷新
 
 namespace AINovelStudio.ViewModels;
 
@@ -32,6 +34,12 @@ public class AIGenerationViewModel : BaseViewModel
 
     private readonly AITextGenerationService _aiService;
     private readonly SettingsService _settingsService;
+
+    // 新增：流式UI缓冲与刷新
+    private readonly StringBuilder _streamBuffer = new StringBuilder();
+    private readonly object _streamLock = new object();
+    private DispatcherTimer? _flushTimer;
+    private int _receivedCharCount;
 
     public AIGenerationViewModel()
     {
@@ -424,6 +432,8 @@ public class AIGenerationViewModel : BaseViewModel
         _isGenerating = true;
         GenerationStatus = "生成中...";
         OutputText = ""; // 清空输出文本，准备接收流式响应
+        _receivedCharCount = 0;
+        lock (_streamLock) { _streamBuffer.Clear(); }
         OnPropertyChanged(nameof(GenerateButtonText));
         OnPropertyChanged(nameof(CanGenerate));
 
@@ -437,18 +447,58 @@ public class AIGenerationViewModel : BaseViewModel
             // 根据设置选择使用流式生成或普通生成
             if (settings.GenerationDefaults.UseStreaming)
             {
-                // 使用流式生成
+                // 启动UI刷新定时器，节流更新
+                _flushTimer?.Stop();
+                _flushTimer = new DispatcherTimer
+                {
+                    Interval = System.TimeSpan.FromMilliseconds(60)
+                };
+                _flushTimer.Tick += (_, __) =>
+                {
+                    string pending;
+                    lock (_streamLock)
+                    {
+                        if (_streamBuffer.Length == 0) return;
+                        pending = _streamBuffer.ToString();
+                        _streamBuffer.Clear();
+                    }
+                    // 在UI线程上批量追加并更新状态
+                    var cleaned = CleanGeneratedText(pending);
+                    OutputText += cleaned;
+                    GenerationStatus = $"生成中...（{_receivedCharCount}字）";
+                };
+                _flushTimer.Start();
+
+                // 使用流式生成（后台线程的回调仅写缓冲）
                 await _aiService.GenerateStreamAsync(prompt, _creativity, maxTokens, 
                     chunk =>
                     {
-                        // 在UI线程上更新输出文本，并清理格式
-                        Application.Current.Dispatcher.Invoke(() =>
+                        // 仅在缓冲中累积，避免频繁切换到UI线程
+                        if (string.IsNullOrEmpty(chunk)) return;
+                        lock (_streamLock)
                         {
-                            var cleanedChunk = CleanGeneratedText(chunk);
-                            OutputText += cleanedChunk;
-                        });
+                            _streamBuffer.Append(chunk);
+                            _receivedCharCount += chunk.Length;
+                        }
                     }, 
                     CancellationToken.None).ConfigureAwait(false);
+
+                // 结束后停止定时器并做最后一次刷新
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    _flushTimer?.Stop();
+                    _flushTimer = null;
+                    string remaining;
+                    lock (_streamLock)
+                    {
+                        remaining = _streamBuffer.ToString();
+                        _streamBuffer.Clear();
+                    }
+                    if (!string.IsNullOrEmpty(remaining))
+                    {
+                        OutputText += CleanGeneratedText(remaining);
+                    }
+                });
             }
             else
             {
@@ -486,7 +536,7 @@ public class AIGenerationViewModel : BaseViewModel
             : IsRewriteSelected
                 ? $"你是一位专业的小说作家。请直接改写下面的小说内容，使语言更加生动流畅，保持原意，约{WordLimit}字。不要分析或解释，直接输出改写后的小说正文："
                 : IsOutlineSelected
-                    ? $"你是一位专业的小说作家。请根据以下设定直接生成详细的小说大纲，包含具体的情节发展和关键场景，约{WordLimit}字。不要分析或解释，直接输出大纲内容："
+                    ? $"你是一位专业的小说作家。请根据以下设定直接生成详细的小说大纲，包含具体的情节发展与关键场景，约{WordLimit}字。不要分析或解释，直接输出大纲内容："
                     : "你是一位专业的小说作家。请直接生成小说内容，不要分析或解释：";
 
         var context = InputText ?? string.Empty;
@@ -496,6 +546,32 @@ public class AIGenerationViewModel : BaseViewModel
         var novelInfo = SelectedNovel != null ? $"\n小说：{SelectedNovel.Title}" : string.Empty;
 
         return $"{header}\n\n{context}{novelInfo}{chapterInfo}";
+    }
+
+    // 新增：清理AI生成的文本（移除Markdown标记与多余空白）
+    private string CleanGeneratedText(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return text;
+
+        // 移除Markdown格式的粗体标记 **
+        text = text.Replace("**", "");
+        
+        // 移除多余的空行（保留单个换行）
+        text = System.Text.RegularExpressions.Regex.Replace(text, @"\n\s*\n\s*\n", "\n\n");
+        
+        // 统一换行符为 \n 并按行处理
+        var lines = text.Replace("\r\n", "\n").Split(new[] { "\n" }, System.StringSplitOptions.None);
+        for (int i = 0; i < lines.Length; i++)
+        {
+            lines[i] = lines[i].Trim();
+        }
+        text = string.Join("\n", lines);
+        
+        // 移除开头和结尾的空白字符
+        text = text.Trim();
+        
+        return text;
     }
 
     /// <summary>
@@ -518,62 +594,26 @@ public class AIGenerationViewModel : BaseViewModel
         if (string.IsNullOrWhiteSpace(OutputText) || SelectedNovel == null)
             return;
 
-        var result = MessageBox.Show("是否将生成的内容保存为新章节？", "确认", 
-                                   MessageBoxButton.YesNo, MessageBoxImage.Question);
-        
-        if (result == MessageBoxResult.Yes)
-        {
-            var newChapter = new Chapter
-            {
-                Id = (SelectedNovel.Chapters?.Count ?? 0) + 1,
-                Title = $"第{(SelectedNovel.Chapters?.Count ?? 0) + 1}章：AI生成章节",
-                Content = OutputText,
-                Status = ChapterStatus.Draft,
-                CreatedAt = DateTime.Now
-            };
+        var chapter = SelectedChapter ?? new Chapter { Title = "AI生成片段" };
+        chapter.Content = OutputText;
 
-            SelectedNovel.Chapters ??= new List<Chapter>();
-            SelectedNovel.Chapters.Add(newChapter);
-            
+        if (!SelectedNovel.Chapters.Contains(chapter))
+        {
+            SelectedNovel.Chapters.Add(chapter);
             LoadChapters();
-            MessageBox.Show("内容已保存为新章节", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
         }
+
+        MessageBox.Show("已保存到章节", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     /// <summary>
-    /// 重新生成
+    /// 重新生成（清空输出并再次生成）
     /// </summary>
     private void Regenerate()
     {
+        if (!CanGenerate) return;
+        OutputText = string.Empty;
         Generate();
-    }
-
-    /// <summary>
-    /// 清理生成的文本，移除多余的格式标记和空格
-    /// </summary>
-    private string CleanGeneratedText(string text)
-    {
-        if (string.IsNullOrEmpty(text))
-            return text;
-
-        // 移除Markdown格式的粗体标记 **
-        text = text.Replace("**", "");
-        
-        // 移除多余的空行（保留单个换行）
-        text = System.Text.RegularExpressions.Regex.Replace(text, @"\n\s*\n\s*\n", "\n\n");
-        
-        // 移除行首和行尾的多余空格
-        var lines = text.Split('\n');
-        for (int i = 0; i < lines.Length; i++)
-        {
-            lines[i] = lines[i].Trim();
-        }
-        text = string.Join("\n", lines);
-        
-        // 移除开头和结尾的空白字符
-        text = text.Trim();
-        
-        return text;
     }
 
     #endregion

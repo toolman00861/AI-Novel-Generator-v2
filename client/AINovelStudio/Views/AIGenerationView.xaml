@@ -164,10 +164,10 @@
                     </Border>
 
                     <!-- 输出文本框 -->
-                    <TextBox Grid.Row="1" Text="{Binding OutputText}" TextWrapping="Wrap" 
+                    <TextBox x:Name="OutputTextBox" Grid.Row="1" Text="{Binding OutputText}" TextWrapping="Wrap" 
                            IsReadOnly="True" VerticalScrollBarVisibility="Auto"
                            Padding="15" BorderThickness="0" FontSize="14"
-                           Background="#FAFAFA"/>
+                           Background="#FAFAFA" TextChanged="OutputTextBox_TextChanged"/>
 
                     <!-- 操作按钮 -->
                     <Border Grid.Row="2" Background="{StaticResource HoverBrush}" Padding="15">
