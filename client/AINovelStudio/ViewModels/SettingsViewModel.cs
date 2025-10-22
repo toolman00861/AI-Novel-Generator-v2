@@ -32,6 +32,7 @@ namespace AINovelStudio.ViewModels
                 OnPropertyChanged(nameof(ApiKey));
                 OnPropertyChanged(nameof(BaseUrl));
                 OnPropertyChanged(nameof(DefaultModel));
+                CommandManager.InvalidateRequerySuggested();
             }
         }
 
@@ -173,6 +174,18 @@ namespace AINovelStudio.ViewModels
         private void Reset()
         {
             _settings = new AppSettings();
+            // 重置 Providers 列表为默认
+            Providers.Clear();
+            var defaultProvider = new ProviderSettings
+            {
+                Name = "Default",
+                Vendor = "openai",
+                BaseUrl = "https://api.openai.com/v1",
+                DefaultModel = "gpt-4o-mini"
+            };
+            Providers.Add(defaultProvider);
+            SelectedProvider = defaultProvider;
+
             OnPropertyChanged(nameof(ApiBase));
             OnPropertyChanged(nameof(Vendor));
             OnPropertyChanged(nameof(ApiKey));
@@ -183,6 +196,7 @@ namespace AINovelStudio.ViewModels
             OnPropertyChanged(nameof(WordLimit));
             OnPropertyChanged(nameof(Temperature));
             OnPropertyChanged(nameof(MaxTokens));
+            CommandManager.InvalidateRequerySuggested();
             MessageBox.Show("已重置为默认值（未保存）", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
@@ -200,6 +214,7 @@ namespace AINovelStudio.ViewModels
             };
             Providers.Add(newProvider);
             SelectedProvider = newProvider;
+            CommandManager.InvalidateRequerySuggested();
         }
 
         private void RemoveProvider()
@@ -209,6 +224,7 @@ namespace AINovelStudio.ViewModels
                 var index = Providers.IndexOf(SelectedProvider);
                 Providers.Remove(SelectedProvider);
                 SelectedProvider = Providers[Math.Max(0, index - 1)];
+                CommandManager.InvalidateRequerySuggested();
             }
         }
 
