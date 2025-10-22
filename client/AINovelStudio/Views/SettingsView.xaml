@@ -142,8 +142,28 @@
                 <StackPanel Margin="0,0,0,16">
                     <TextBlock Text="模型供应商（Provider）"
                                Style="{StaticResource SubtitleStyle}"/>
-                    <TextBlock Text="选择使用的模型厂商并管理凭证"
+                    <TextBlock Text="管理多个模型供应商配置"
                                Style="{StaticResource SecondaryTextStyle}"/>
+                </StackPanel>
+
+                <StackPanel Margin="0,0,0,16"
+                            Orientation="Horizontal">
+                    <TextBlock Text="当前供应商"
+                               Style="{StaticResource LabelStyle}"
+                               VerticalAlignment="Center"
+                               Margin="0,0,8,0"/>
+                    <ComboBox Style="{StaticResource ModernComboBoxStyle}"
+                              ItemsSource="{Binding Providers}"
+                              SelectedItem="{Binding SelectedProvider}"
+                              DisplayMemberPath="Name"
+                              Width="200"/>
+                </StackPanel>
+
+                <StackPanel Margin="0,0,0,16">
+                    <TextBlock Text="名称"
+                               Style="{StaticResource LabelStyle}"/>
+                    <TextBox Style="{StaticResource ModernTextBoxStyle}"
+                              Text="{Binding SelectedProvider.Name, UpdateSourceTrigger=PropertyChanged}"/>
                 </StackPanel>
 
                 <StackPanel Margin="0,0,0,16">
@@ -185,6 +205,14 @@
 
                 <StackPanel Orientation="Horizontal"
                             HorizontalAlignment="Right">
+                    <Button Content="添加供应商"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Command="{Binding AddProviderCommand}"
+                            Margin="0,0,12,0"/>
+                    <Button Content="移除当前"
+                            Style="{StaticResource SecondaryButtonStyle}"
+                            Command="{Binding RemoveProviderCommand}"
+                            Margin="0,0,12,0"/>
                     <Button Content="测试连通性"
                             Style="{StaticResource SecondaryButtonStyle}"
                             Command="{Binding TestCommand}"/>

@@ -5,13 +5,15 @@ namespace AINovelStudio.Models
     public class AppSettings
     {
         public string ApiBase { get; set; } = string.Empty;
-        public ProviderSettings Provider { get; set; } = new ProviderSettings();
+        public List<ProviderSettings> Providers { get; set; } = new List<ProviderSettings>();
+        public string SelectedProviderName { get; set; } = string.Empty;
         public FeatureFlags FeatureFlags { get; set; } = new FeatureFlags();
         public GenerationDefaults GenerationDefaults { get; set; } = new GenerationDefaults();
     }
 
     public class ProviderSettings
     {
+        public string Name { get; set; } = string.Empty;
         public string Vendor { get; set; } = "openai"; // openai|azure|openrouter|custom
         public string ApiKey { get; set; } = string.Empty;
         public string BaseUrl { get; set; } = "https://api.openai.com/v1";

@@ -7,6 +7,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using AINovelStudio.Models;
+using System.Linq;
 
 namespace AINovelStudio.Services
 {
@@ -31,10 +32,15 @@ namespace AINovelStudio.Services
         public async Task<string> GenerateAsync(string prompt, double temperature, int maxTokens, CancellationToken ct = default)
         {
             var settings = _settingsService.Load();
-            var vendor = (settings.Provider.Vendor ?? "openai").Trim().ToLowerInvariant();
-            var apiKey = settings.Provider.ApiKey;
-            var baseUrl = settings.Provider.BaseUrl;
-            var model = string.IsNullOrWhiteSpace(settings.Provider.DefaultModel) ? "gpt-4o-mini" : settings.Provider.DefaultModel;
+            if (string.IsNullOrEmpty(settings.SelectedProviderName) || !settings.Providers.Any(p => p.Name == settings.SelectedProviderName))
+            {
+                throw new InvalidOperationException("No selected provider configured.");
+            }
+            var selectedProvider = settings.Providers.First(p => p.Name == settings.SelectedProviderName);
+            var vendor = (selectedProvider.Vendor ?? "openai").Trim().ToLowerInvariant();
+            var apiKey = selectedProvider.ApiKey;
+            var baseUrl = selectedProvider.BaseUrl;
+            var model = string.IsNullOrWhiteSpace(selectedProvider.DefaultModel) ? "gpt-4o-mini" : selectedProvider.DefaultModel;
 
             if (string.IsNullOrWhiteSpace(baseUrl))
                 throw new InvalidOperationException("BaseUrl 未配置");

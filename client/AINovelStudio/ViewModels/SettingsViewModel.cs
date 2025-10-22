@@ -6,6 +6,7 @@ using System.Windows.Input;
 using AINovelStudio.Commands;
 using AINovelStudio.Models;
 using AINovelStudio.Services;
+using System.Collections.ObjectModel;
 
 namespace AINovelStudio.ViewModels
 {
@@ -17,6 +18,26 @@ namespace AINovelStudio.ViewModels
         private readonly SettingsService _service;
         private AppSettings _settings;
 
+        public ObservableCollection<ProviderSettings> Providers { get; } = new ObservableCollection<ProviderSettings>();
+
+        private ProviderSettings? _selectedProvider;
+        public ProviderSettings? SelectedProvider
+        {
+            get => _selectedProvider;
+            set
+            {
+                _selectedProvider = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(Vendor));
+                OnPropertyChanged(nameof(ApiKey));
+                OnPropertyChanged(nameof(BaseUrl));
+                OnPropertyChanged(nameof(DefaultModel));
+            }
+        }
+
+        public ICommand AddProviderCommand { get; }
+        public ICommand RemoveProviderCommand { get; }
+
         public SettingsViewModel() : this(new SettingsService()) { }
 
         public SettingsViewModel(SettingsService service)
@@ -24,9 +45,18 @@ namespace AINovelStudio.ViewModels
             _service = service;
             _settings = _service.Load();
 
+            foreach (var provider in _settings.Providers)
+            {
+                Providers.Add(provider);
+            }
+            SelectedProvider = Providers.FirstOrDefault(p => p.Name == _settings.SelectedProviderName) ?? Providers.FirstOrDefault();
+
             SaveCommand = new RelayCommand(Save);
             ResetCommand = new RelayCommand(Reset);
             TestCommand = new RelayCommand(async () => await TestAsync());
+
+            AddProviderCommand = new RelayCommand(AddProvider);
+            RemoveProviderCommand = new RelayCommand(RemoveProvider, () => SelectedProvider != null && Providers.Count > 1);
         }
 
         public ICommand SaveCommand { get; }
@@ -40,29 +70,57 @@ namespace AINovelStudio.ViewModels
             set { _settings.ApiBase = value; OnPropertyChanged(); }
         }
 
-        // Provider 配置
+        // Provider 配置 (proxied to SelectedProvider)
         public string Vendor
         {
-            get => _settings.Provider.Vendor;
-            set { _settings.Provider.Vendor = value; OnPropertyChanged(); }
+            get => SelectedProvider?.Vendor ?? "openai";
+            set
+            {
+                if (SelectedProvider != null)
+                {
+                    SelectedProvider.Vendor = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
         public string ApiKey
         {
-            get => _settings.Provider.ApiKey;
-            set { _settings.Provider.ApiKey = value; OnPropertyChanged(); }
+            get => SelectedProvider?.ApiKey ?? string.Empty;
+            set
+            {
+                if (SelectedProvider != null)
+                {
+                    SelectedProvider.ApiKey = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
         public string BaseUrl
         {
-            get => _settings.Provider.BaseUrl;
-            set { _settings.Provider.BaseUrl = value; OnPropertyChanged(); }
+            get => SelectedProvider?.BaseUrl ?? "https://api.openai.com/v1";
+            set
+            {
+                if (SelectedProvider != null)
+                {
+                    SelectedProvider.BaseUrl = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
         public string DefaultModel
         {
-            get => _settings.Provider.DefaultModel;
-            set { _settings.Provider.DefaultModel = value; OnPropertyChanged(); }
+            get => SelectedProvider?.DefaultModel ?? "gpt-4o-mini";
+            set
+            {
+                if (SelectedProvider != null)
+                {
+                    SelectedProvider.DefaultModel = value;
+                    OnPropertyChanged();
+                }
+            }
         }
 
         // 功能开关
@@ -101,6 +159,8 @@ namespace AINovelStudio.ViewModels
         {
             try
             {
+                _settings.Providers = Providers.ToList();
+                _settings.SelectedProviderName = SelectedProvider?.Name;
                 _service.Save(_settings);
                 MessageBox.Show("设置已保存", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
             }
@@ -126,17 +186,49 @@ namespace AINovelStudio.ViewModels
             MessageBox.Show("已重置为默认值（未保存）", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
+        
+
+        private void AddProvider()
+        {
+            var newName = $"Provider{Providers.Count + 1}";
+            var newProvider = new ProviderSettings
+            {
+                Name = newName,
+                Vendor = "openai",
+                BaseUrl = "https://api.openai.com/v1",
+                DefaultModel = "gpt-4o-mini"
+            };
+            Providers.Add(newProvider);
+            SelectedProvider = newProvider;
+        }
+
+        private void RemoveProvider()
+        {
+            if (SelectedProvider != null && Providers.Count > 1)
+            {
+                var index = Providers.IndexOf(SelectedProvider);
+                Providers.Remove(SelectedProvider);
+                SelectedProvider = Providers[Math.Max(0, index - 1)];
+            }
+        }
+
         private async Task TestAsync()
         {
             try
             {
+                if (SelectedProvider == null)
+                {
+                    MessageBox.Show("请先选择一个提供商", "校验", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
                 // 基础校验
-                if (string.IsNullOrWhiteSpace(Vendor))
+                if (string.IsNullOrWhiteSpace(SelectedProvider.Vendor))
                 {
                     MessageBox.Show("请先设置 Vendor（openai/azure/openrouter/custom）", "校验", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
-                if (!Uri.TryCreate(BaseUrl, UriKind.Absolute, out _))
+                if (!Uri.TryCreate(SelectedProvider.BaseUrl, UriKind.Absolute, out _))
                 {
                     MessageBox.Show("BaseUrl 不是有效的绝对地址", "校验", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
@@ -145,7 +237,7 @@ namespace AINovelStudio.ViewModels
                 // 简单网络探测（可选）
                 using var client = new HttpClient();
                 client.Timeout = TimeSpan.FromSeconds(5);
-                var requestUrl = string.IsNullOrWhiteSpace(ApiBase) ? BaseUrl : ApiBase;
+                var requestUrl = string.IsNullOrWhiteSpace(ApiBase) ? SelectedProvider.BaseUrl : ApiBase;
 
                 var head = new HttpRequestMessage(HttpMethod.Get, requestUrl);
                 var response = await client.SendAsync(head);
