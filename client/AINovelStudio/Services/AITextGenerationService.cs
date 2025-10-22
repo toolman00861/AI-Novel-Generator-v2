@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AINovelStudio.Models;
 using System.Linq;
+using System.Diagnostics;
 
 namespace AINovelStudio.Services
 {
@@ -25,7 +26,8 @@ namespace AINovelStudio.Services
             _jsonOptions = new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                WriteIndented = true // 美化输出的JSON，便于调试
             };
         }
 
@@ -51,10 +53,22 @@ namespace AINovelStudio.Services
             using var client = new HttpClient();
             client.Timeout = TimeSpan.FromSeconds(30);
 
+            // 记录请求信息
+            Debug.WriteLine($"[API请求] 供应商: {vendor}, 模型: {model}, BaseUrl: {baseUrl}");
+
             // 统一 Authorization 处理
             if (!string.IsNullOrWhiteSpace(apiKey))
             {
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+                Debug.WriteLine($"[API请求] 已设置Authorization头: Bearer {MaskApiKey(apiKey)}");
+            }
+
+            // 添加智谋大模型所需的特殊头部
+            if (vendor == "zhipu" || (vendor == "custom" && baseUrl.Contains("bigmodel.cn")))
+            {
+                // 智谋API需要特殊处理
+                Debug.WriteLine("[API请求] 检测到智谋API，添加特殊头部");
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             }
 
             var endpoint = BuildEndpoint(vendor, baseUrl);
@@ -62,18 +76,43 @@ namespace AINovelStudio.Services
             var json = JsonSerializer.Serialize(requestBody, _jsonOptions);
             using var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await client.PostAsync(endpoint, content, ct);
-            var resText = await response.Content.ReadAsStringAsync(ct);
-            if (!response.IsSuccessStatusCode)
-            {
-                throw new InvalidOperationException($"AI接口错误：{response.StatusCode}\n{resText}");
-            }
+            // 记录完整请求信息
+            Debug.WriteLine($"[API请求] 端点: {endpoint}");
+            Debug.WriteLine($"[API请求] 请求体: {json}");
 
-            return ExtractText(vendor, resText);
+            try
+            {
+                var response = await client.PostAsync(endpoint, content, ct);
+                var resText = await response.Content.ReadAsStringAsync(ct);
+                
+                // 记录响应信息
+                Debug.WriteLine($"[API响应] 状态码: {response.StatusCode}");
+                Debug.WriteLine($"[API响应] 响应头: {FormatHeaders(response.Headers)}");
+                Debug.WriteLine($"[API响应] 响应体: {resText}");
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    throw new InvalidOperationException($"AI接口错误：{response.StatusCode}\n{resText}");
+                }
+
+                return ExtractText(vendor, resText);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[API错误] {ex.GetType().Name}: {ex.Message}");
+                throw;
+            }
         }
 
         private static string BuildEndpoint(string vendor, string baseUrl)
         {
+            // 智谋API特殊处理
+            if (vendor == "zhipu" || (vendor == "custom" && baseUrl.Contains("bigmodel.cn")))
+            {
+                // 智谋API的baseUrl已经是完整路径
+                return baseUrl;
+            }
+            
             // openai / openrouter 统一走 /chat/completions
             if (vendor == "openai" || vendor == "openrouter")
             {
@@ -91,6 +130,22 @@ namespace AINovelStudio.Services
 
         private static object BuildChatCompletionsBody(string vendor, string model, string prompt, double temperature, int maxTokens)
         {
+            // 智谋API特殊处理
+            if (vendor == "zhipu" || (vendor == "custom" && model.StartsWith("glm-")))
+            {
+                return new
+                {
+                    model = model,
+                    messages = new object[]
+                    {
+                        new { role = "user", content = prompt }
+                    },
+                    temperature = Math.Clamp(temperature, 0, 2),
+                    max_tokens = maxTokens > 0 ? maxTokens : 2048,
+                    stream = true
+                };
+            }
+            
             // OpenAI / OpenRouter 兼容 body
             var body = new
             {
@@ -135,11 +190,31 @@ namespace AINovelStudio.Services
                     return textProp.GetString() ?? string.Empty;
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                // ignore parse errors
+                Debug.WriteLine($"[JSON解析错误] {ex.Message}");
             }
             return string.Empty;
+        }
+
+        // 辅助方法：掩盖API密钥的大部分字符
+        private string MaskApiKey(string apiKey)
+        {
+            if (string.IsNullOrEmpty(apiKey) || apiKey.Length <= 8)
+                return "***";
+            
+            return apiKey.Substring(0, 4) + "..." + apiKey.Substring(apiKey.Length - 4);
+        }
+
+        // 辅助方法：格式化HTTP头部信息
+        private string FormatHeaders(HttpResponseHeaders headers)
+        {
+            var sb = new StringBuilder();
+            foreach (var header in headers)
+            {
+                sb.AppendLine($"{header.Key}: {string.Join(", ", header.Value)}");
+            }
+            return sb.ToString();
         }
     }
 }

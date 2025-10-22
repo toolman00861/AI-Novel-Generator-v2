@@ -1,5 +1,6 @@
 using System;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -7,6 +8,9 @@ using AINovelStudio.Commands;
 using AINovelStudio.Models;
 using AINovelStudio.Services;
 using System.Collections.ObjectModel;
+using System.Text.Json;
+using System.Text;
+using System.Diagnostics;
 
 namespace AINovelStudio.ViewModels
 {
@@ -255,12 +259,65 @@ namespace AINovelStudio.ViewModels
                 client.Timeout = TimeSpan.FromSeconds(5);
                 var requestUrl = string.IsNullOrWhiteSpace(ApiBase) ? SelectedProvider.BaseUrl : ApiBase;
 
-                var head = new HttpRequestMessage(HttpMethod.Get, requestUrl);
-                var response = await client.SendAsync(head);
-                MessageBox.Show($"网络连通：{(int)response.StatusCode}", "测试", MessageBoxButton.OK, MessageBoxImage.Information);
+                // 添加详细日志
+                Debug.WriteLine($"[测试连接] 供应商: {SelectedProvider.Vendor}, URL: {requestUrl}");
+                
+                // 智谋API特殊处理
+                bool isZhipu = SelectedProvider.Vendor == "zhipu" || 
+                               (SelectedProvider.Vendor == "custom" && 
+                                (requestUrl.Contains("bigmodel.cn") || 
+                                 (SelectedProvider.DefaultModel?.StartsWith("glm-") == true)));
+                
+                if (isZhipu)
+                {
+                    Debug.WriteLine("[测试连接] 检测到智谋API，使用POST方法测试");
+                    
+                    // 智谋API需要使用POST方法和特定的请求体
+                    var testRequest = new HttpRequestMessage(HttpMethod.Post, requestUrl);
+                    testRequest.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                    
+                    if (!string.IsNullOrWhiteSpace(SelectedProvider.ApiKey))
+                    {
+                        testRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", SelectedProvider.ApiKey);
+                    }
+                    
+                    // 构建一个最小化的请求体
+                    var testBody = new
+                    {
+                        model = SelectedProvider.DefaultModel ?? "glm-4.6",
+                        messages = new[] { new { role = "user", content = "hello" } },
+                        stream = false,
+                        max_tokens = 10
+                    };
+                    
+                    var json = JsonSerializer.Serialize(testBody);
+                    testRequest.Content = new StringContent(json, Encoding.UTF8, "application/json");
+                    
+                    // 记录请求详情
+                    Debug.WriteLine($"[测试连接] 请求体: {json}");
+                    
+                    var response = await client.SendAsync(testRequest);
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    
+                    Debug.WriteLine($"[测试连接] 响应状态: {(int)response.StatusCode}");
+                    Debug.WriteLine($"[测试连接] 响应内容: {responseContent}");
+                    
+                    MessageBox.Show($"智谋API测试结果：{(int)response.StatusCode}\n\n响应内容：{(responseContent.Length > 200 ? responseContent.Substring(0, 200) + "..." : responseContent)}", 
+                                   "测试", MessageBoxButton.OK, 
+                                   response.IsSuccessStatusCode ? MessageBoxImage.Information : MessageBoxImage.Warning);
+                }
+                else
+                {
+                    // 常规API测试
+                    var head = new HttpRequestMessage(HttpMethod.Get, requestUrl);
+                    var response = await client.SendAsync(head);
+                    Debug.WriteLine($"[测试连接] 响应状态: {(int)response.StatusCode}");
+                    MessageBox.Show($"网络连通：{(int)response.StatusCode}", "测试", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
             }
             catch (Exception ex)
             {
+                Debug.WriteLine($"[测试连接错误] {ex.GetType().Name}: {ex.Message}");
                 MessageBox.Show($"测试失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
