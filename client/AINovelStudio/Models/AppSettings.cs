@@ -33,5 +33,6 @@ namespace AINovelStudio.Models
         public double Temperature { get; set; } = 0.7;
         public int MaxTokens { get; set; } = 1024;
         public int TimeoutSeconds { get; set; } = 120;
+        public bool UseStreaming { get; set; } = true;
     }
 }

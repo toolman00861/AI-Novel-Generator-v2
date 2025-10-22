@@ -180,6 +180,12 @@ namespace AINovelStudio.ViewModels
             set { _settings.GenerationDefaults.TimeoutSeconds = value; OnPropertyChanged(); }
         }
 
+        public bool UseStreaming
+        {
+            get => _settings.GenerationDefaults.UseStreaming;
+            set { _settings.GenerationDefaults.UseStreaming = value; OnPropertyChanged(); }
+        }
+
         private void Save()
         {
             try
@@ -221,6 +227,7 @@ namespace AINovelStudio.ViewModels
             OnPropertyChanged(nameof(Temperature));
             OnPropertyChanged(nameof(MaxTokens));
             OnPropertyChanged(nameof(TimeoutSeconds));
+            OnPropertyChanged(nameof(UseStreaming));
             CommandManager.InvalidateRequerySuggested();
             MessageBox.Show("已重置为默认值（未保存）", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
         }

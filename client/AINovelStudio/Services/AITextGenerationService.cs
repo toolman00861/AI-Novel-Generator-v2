@@ -186,39 +186,54 @@ namespace AINovelStudio.Services
 
             try
             {
-                var response = await client.PostAsync(endpoint, content, HttpCompletionOption.ResponseHeadersRead, ct);
-                
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorText = await response.Content.ReadAsStringAsync(ct);
-                    _logger?.Error($"流式AI接口错误：{response.StatusCode}\n{errorText}", "AI生成");
-                    throw new InvalidOperationException($"流式AI接口错误：{response.StatusCode}\n{errorText}");
-                }
+                var response = await client.PostAsync(endpoint, content, ct);
+                response.EnsureSuccessStatusCode();
 
                 var fullText = new StringBuilder();
                 using var stream = await response.Content.ReadAsStreamAsync(ct);
                 using var reader = new StreamReader(stream);
 
                 string? line;
+                int lineCount = 0;
                 while ((line = await reader.ReadLineAsync()) != null)
                 {
                     ct.ThrowIfCancellationRequested();
+                    lineCount++;
 
-                    if (string.IsNullOrWhiteSpace(line) || !line.StartsWith("data: "))
+                    // _logger?.Debug($"[流式响应] 第{lineCount}行: {line}", "AI生成");
+
+                    if (string.IsNullOrWhiteSpace(line))
+                    {
+                        // _logger?.Debug($"[流式响应] 跳过空行", "AI生成");
                         continue;
+                    }
+
+                    if (!line.StartsWith("data: "))
+                    {
+                        // _logger?.Debug($"[流式响应] 跳过非data行: {line}", "AI生成");
+                        continue;
+                    }
 
                     var data = line.Substring(6); // 移除 "data: " 前缀
+                    // _logger?.Debug($"[流式响应] 提取数据: {data}", "AI生成");
                     
                     if (data == "[DONE]")
+                    {
+                        // _logger?.Debug($"[流式响应] 收到结束标记", "AI生成");
                         break;
+                    }
 
                     try
                     {
                         var chunk = ExtractStreamChunk(vendor, data);
+                        // _logger?.Debug($"[流式响应] 解析得到文本块: '{chunk}'", "AI生成");
                         if (!string.IsNullOrEmpty(chunk))
                         {
                             fullText.Append(chunk);
                             onChunkReceived?.Invoke(chunk);
+                            
+                            // 添加小延迟以改善UI响应性
+                            await Task.Delay(1, ct).ConfigureAwait(false);
                         }
                     }
                     catch (Exception ex)
@@ -226,6 +241,8 @@ namespace AINovelStudio.Services
                         _logger?.Warning($"解析流式响应块失败: {ex.Message}, 数据: {data}", "AI生成");
                     }
                 }
+
+                _logger?.Debug($"[流式响应] 总共处理了{lineCount}行数据", "AI生成");
 
                 var result = fullText.ToString();
                 _logger?.Info($"[流式API响应] 完成，总长度: {result.Length} 字符", "AI生成");
@@ -376,33 +393,72 @@ namespace AINovelStudio.Services
         {
             try
             {
+                _logger?.Debug($"[ExtractStreamChunk] 开始解析数据: {data}", "AI生成");
+                
                 using var doc = JsonDocument.Parse(data);
                 var root = doc.RootElement;
 
-                // OpenAI/OpenRouter/Azure 格式: choices[0].delta.content
+                // 智谱AI和OpenAI/OpenRouter/Azure 格式: choices[0].delta.content
                 if (root.TryGetProperty("choices", out var choices) && choices.GetArrayLength() > 0)
                 {
                     var first = choices[0];
+                    _logger?.Debug($"[ExtractStreamChunk] 找到choices[0]", "AI生成");
+                    
                     if (first.TryGetProperty("delta", out var delta))
                     {
+                        _logger?.Debug($"[ExtractStreamChunk] 找到delta字段", "AI生成");
+                        
+                        // 优先尝试标准的content字段
                         if (delta.TryGetProperty("content", out var content))
                         {
-                            return content.GetString() ?? string.Empty;
+                            var contentText = content.GetString() ?? string.Empty;
+                            _logger?.Debug($"[ExtractStreamChunk] 提取到content: '{contentText}'", "AI生成");
+                            return contentText;
+                        }
+                        // 智谱AI特有的reasoning_content字段
+                        else if (delta.TryGetProperty("reasoning_content", out var reasoningContent))
+                        {
+                            var contentText = reasoningContent.GetString() ?? string.Empty;
+                            _logger?.Debug($"[ExtractStreamChunk] 提取到reasoning_content: '{contentText}'", "AI生成");
+                            return contentText;
+                        }
+                        else
+                        {
+                            _logger?.Debug($"[ExtractStreamChunk] delta中没有content或reasoning_content字段", "AI生成");
+                        }
+                    }
+                    else
+                    {
+                        _logger?.Debug($"[ExtractStreamChunk] choices[0]中没有delta字段", "AI生成");
+                        
+                        // 尝试直接从choices[0]获取content（某些情况下可能存在）
+                        if (first.TryGetProperty("content", out var directContent))
+                        {
+                            var contentText = directContent.GetString() ?? string.Empty;
+                            _logger?.Debug($"[ExtractStreamChunk] 从choices[0]直接提取到content: '{contentText}'", "AI生成");
+                            return contentText;
                         }
                     }
                 }
-
-                // 智谱API格式: choices[0].delta.content 或其他可能的格式
-                if (root.TryGetProperty("content", out var contentProp))
+                else
                 {
-                    return contentProp.GetString() ?? string.Empty;
+                    _logger?.Debug($"[ExtractStreamChunk] 没有找到choices数组或数组为空", "AI生成");
                 }
 
+                // 备用格式：直接在根级别查找content
+                if (root.TryGetProperty("content", out var rootContent))
+                {
+                    var contentText = rootContent.GetString() ?? string.Empty;
+                    _logger?.Debug($"[ExtractStreamChunk] 从根级别提取到content: '{contentText}'", "AI生成");
+                    return contentText;
+                }
+
+                _logger?.Debug($"[ExtractStreamChunk] 未找到任何可用的content字段", "AI生成");
                 return string.Empty;
             }
             catch (Exception ex)
             {
-                _logger?.Warning($"解析流式数据块失败: {ex.Message}", "AI生成");
+                _logger?.Warning($"[ExtractStreamChunk] 解析流式数据块失败: {ex.Message}, 数据: {data}", "AI生成");
                 return string.Empty;
             }
         }

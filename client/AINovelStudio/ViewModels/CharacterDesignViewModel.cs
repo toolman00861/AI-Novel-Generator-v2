@@ -472,17 +472,28 @@ public class CharacterDesignViewModel : BaseViewModel
             var maxTokens = settings.GenerationDefaults.MaxTokens;
             var temperature = settings.GenerationDefaults.Temperature;
 
-            // 使用流式生成
-            await _aiService.GenerateStreamAsync(AIPrompt, temperature, maxTokens, 
-                chunk =>
-                {
-                    // 在UI线程上更新输出文本
-                    Application.Current.Dispatcher.Invoke(() =>
+            // 根据设置选择使用流式生成或普通生成
+            if (settings.GenerationDefaults.UseStreaming)
+            {
+                // 使用流式生成
+                await _aiService.GenerateStreamAsync(AIPrompt, temperature, maxTokens, 
+                    chunk =>
                     {
-                        AIGeneratedContent += chunk;
-                    });
-                }, 
-                CancellationToken.None);
+                        // 在UI线程上更新输出文本，并清理格式
+                        Application.Current.Dispatcher.Invoke(() =>
+                        {
+                            var cleanedChunk = CleanGeneratedText(chunk);
+                            AIGeneratedContent += cleanedChunk;
+                        });
+                    }, 
+                    CancellationToken.None).ConfigureAwait(false);
+            }
+            else
+            {
+                // 使用普通生成
+                var result = await _aiService.GenerateAsync(AIPrompt, temperature, maxTokens, CancellationToken.None).ConfigureAwait(false);
+                AIGeneratedContent = CleanGeneratedText(result);
+            }
 
             if (string.IsNullOrWhiteSpace(AIGeneratedContent))
             {
@@ -590,6 +601,34 @@ public class CharacterDesignViewModel : BaseViewModel
             Clipboard.SetText(AIGeneratedContent);
             MessageBox.Show("内容已复制到剪贴板", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
         }
+    }
+
+    /// <summary>
+    /// 清理生成的文本，移除多余的格式标记和空格
+    /// </summary>
+    private string CleanGeneratedText(string text)
+    {
+        if (string.IsNullOrEmpty(text))
+            return text;
+
+        // 移除Markdown格式的粗体标记 **
+        text = text.Replace("**", "");
+        
+        // 移除多余的空行（保留单个换行）
+        text = System.Text.RegularExpressions.Regex.Replace(text, @"\n\s*\n\s*\n", "\n\n");
+        
+        // 移除行首和行尾的多余空格
+        var lines = text.Split('\n');
+        for (int i = 0; i < lines.Length; i++)
+        {
+            lines[i] = lines[i].Trim();
+        }
+        text = string.Join("\n", lines);
+        
+        // 移除开头和结尾的空白字符
+        text = text.Trim();
+        
+        return text;
     }
 
     #endregion

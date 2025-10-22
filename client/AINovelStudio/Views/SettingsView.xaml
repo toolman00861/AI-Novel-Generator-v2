@@ -81,6 +81,9 @@
                                 <CheckBox Content="启用流式生成（Streaming）"
                                           IsChecked="{Binding StreamingEnabled}"
                                           Margin="0,0,0,6"/>
+                                <CheckBox Content="使用流传输模式（推荐）"
+                                          IsChecked="{Binding UseStreaming}"
+                                          Margin="0,0,0,6"/>
                                 <CheckBox Content="自动保存工作区"
                                           IsChecked="{Binding AutoSaveEnabled}"/>
                             </StackPanel>
