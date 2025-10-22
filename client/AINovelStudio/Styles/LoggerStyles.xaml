@@ -1,0 +1,103 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:services="clr-namespace:AINovelStudio.Services">
+
+    <!-- 日志级别颜色转换器 -->
+    <SolidColorBrush x:Key="DebugLevelBrush" Color="#808080"/>
+    <SolidColorBrush x:Key="InfoLevelBrush" Color="#008000"/>
+    <SolidColorBrush x:Key="WarningLevelBrush" Color="#FFA500"/>
+    <SolidColorBrush x:Key="ErrorLevelBrush" Color="#FF0000"/>
+    <SolidColorBrush x:Key="FatalLevelBrush" Color="#8B0000"/>
+
+    <!-- 日志列表项样式 -->
+    <Style x:Key="LogListViewItemStyle" TargetType="ListViewItem">
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Padding" Value="5"/>
+        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        <Setter Property="BorderBrush" Value="#EEEEEE"/>
+    </Style>
+
+    <!-- 日志列表样式 -->
+    <Style x:Key="LogListViewStyle" TargetType="ListView">
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="BorderBrush" Value="#CCCCCC"/>
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Auto"/>
+        <Setter Property="VirtualizingPanel.IsVirtualizing" Value="True"/>
+        <Setter Property="VirtualizingPanel.VirtualizationMode" Value="Recycling"/>
+        <Setter Property="ItemContainerStyle" Value="{StaticResource LogListViewItemStyle}"/>
+    </Style>
+
+    <!-- 工具栏按钮样式 -->
+    <Style x:Key="LoggerToolbarButtonStyle" TargetType="Button">
+        <Setter Property="Padding" Value="10,5"/>
+        <Setter Property="Margin" Value="5,0"/>
+        <Setter Property="MinWidth" Value="60"/>
+        <Setter Property="Background" Value="#F0F0F0"/>
+        <Setter Property="BorderBrush" Value="#CCCCCC"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="3">
+                        <ContentPresenter HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"
+                                          Margin="{TemplateBinding Padding}"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter Property="Background" Value="#E0E0E0"/>
+                            <Setter Property="BorderBrush" Value="#AAAAAA"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter Property="Background" Value="#D0D0D0"/>
+                            <Setter Property="BorderBrush" Value="#999999"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.5"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- 工具栏下拉框样式 -->
+    <Style x:Key="LoggerComboBoxStyle" TargetType="ComboBox">
+        <Setter Property="Padding" Value="5"/>
+        <Setter Property="Margin" Value="5,0"/>
+        <Setter Property="MinWidth" Value="100"/>
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="BorderBrush" Value="#CCCCCC"/>
+        <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+
+    <!-- 工具栏文本框样式 -->
+    <Style x:Key="LoggerTextBoxStyle" TargetType="TextBox">
+        <Setter Property="Padding" Value="5"/>
+        <Setter Property="Margin" Value="5,0"/>
+        <Setter Property="MinWidth" Value="150"/>
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="BorderBrush" Value="#CCCCCC"/>
+        <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+
+    <!-- 状态栏样式 -->
+    <Style x:Key="LoggerStatusBarStyle" TargetType="StatusBar">
+        <Setter Property="Background" Value="#F5F5F5"/>
+        <Setter Property="BorderBrush" Value="#CCCCCC"/>
+        <Setter Property="BorderThickness" Value="0,1,0,0"/>
+        <Setter Property="Padding" Value="5"/>
+    </Style>
+
+    <!-- 状态栏文本样式 -->
+    <Style x:Key="LoggerStatusTextStyle" TargetType="TextBlock">
+        <Setter Property="Foreground" Value="#333333"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+</ResourceDictionary>

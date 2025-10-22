@@ -87,6 +87,10 @@
                             Style="{StaticResource NavigationButtonStyle}"
                             Command="{Binding NavigateCommand}"
                             CommandParameter="设置"/>
+                    <Button Content="日志"
+                            Style="{StaticResource NavigationButtonStyle}"
+                            Command="{Binding NavigateCommand}"
+                            CommandParameter="日志"/>
                 </StackPanel>
             </StackPanel>
         </Border>

@@ -1,0 +1,78 @@
+<UserControl x:Class="AINovelStudio.Views.LoggerView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:AINovelStudio.Views"
+             xmlns:services="clr-namespace:AINovelStudio.Services"
+             mc:Ignorable="d" 
+             d:DesignHeight="300" d:DesignWidth="600">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <!-- 工具栏 -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,5">
+            <ComboBox x:Name="LogLevelFilter" Width="100" Margin="0,0,5,0" SelectedIndex="0">
+                <ComboBoxItem Content="全部"/>
+                <ComboBoxItem Content="Debug"/>
+                <ComboBoxItem Content="Info"/>
+                <ComboBoxItem Content="Warning"/>
+                <ComboBoxItem Content="Error"/>
+                <ComboBoxItem Content="Fatal"/>
+            </ComboBox>
+            <TextBox x:Name="SearchBox" Width="200" Margin="0,0,5,0" ToolTip="搜索日志" />
+            <Button x:Name="SearchButton" Content="搜索" Width="60" Margin="0,0,5,0" Click="SearchButton_Click"/>
+            <Button x:Name="ClearButton" Content="清除" Width="60" Margin="0,0,5,0" Click="ClearButton_Click"/>
+            <Button x:Name="ExportButton" Content="导出" Width="60" Margin="0,0,5,0" Click="ExportButton_Click"/>
+        </StackPanel>
+        
+        <!-- 日志列表 -->
+        <ListView Grid.Row="1" x:Name="LogListView" ItemsSource="{Binding FilteredLogs}" 
+                  ScrollViewer.VerticalScrollBarVisibility="Auto"
+                  ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                  VirtualizingPanel.IsVirtualizing="True"
+                  VirtualizingPanel.VirtualizationMode="Recycling">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="时间" Width="150">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Timestamp, StringFormat=yyyy-MM-dd HH:mm:ss.fff}" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="级别" Width="70">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Level}" Foreground="{Binding LevelColor}" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="来源" Width="100">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Source}" TextWrapping="NoWrap" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                    <GridViewColumn Header="消息" Width="Auto">
+                        <GridViewColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Message}" TextWrapping="Wrap" />
+                            </DataTemplate>
+                        </GridViewColumn.CellTemplate>
+                    </GridViewColumn>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        
+        <!-- 状态栏 -->
+        <StatusBar Grid.Row="2">
+            <TextBlock x:Name="StatusText" Text="{Binding StatusMessage}" />
+        </StatusBar>
+    </Grid>
+</UserControl>

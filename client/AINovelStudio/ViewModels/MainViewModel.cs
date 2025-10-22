@@ -21,22 +21,18 @@ public class MainViewModel : BaseViewModel
         MenuItems = new ObservableCollection<string>
         {
             "小说管理",
-            "AI生成", 
             "人物设计",
-            "设置"
+            "AI生成",
+            "设置",
+            "日志"
         };
         
-        // 默认显示小说管理页面
-        Navigate("小说管理");
+        // 默认导航到小说管理页面
+        Navigate(_selectedMenuItem);
     }
 
     /// <summary>
-    /// 菜单项集合
-    /// </summary>
-    public ObservableCollection<string> MenuItems { get; }
-
-    /// <summary>
-    /// 当前显示的视图
+    /// 当前视图
     /// </summary>
     public object? CurrentView
     {
@@ -45,7 +41,12 @@ public class MainViewModel : BaseViewModel
     }
 
     /// <summary>
-    /// 当前选中的菜单项
+    /// 菜单项集合
+    /// </summary>
+    public ObservableCollection<string> MenuItems { get; }
+
+    /// <summary>
+    /// 选中的菜单项
     /// </summary>
     public string SelectedMenuItem
     {
@@ -72,9 +73,10 @@ public class MainViewModel : BaseViewModel
         CurrentView = viewName switch
         {
             "小说管理" => new NovelManagementView { DataContext = new NovelManagementViewModel() },
+            "人物设计" => new CharacterDesignView { DataContext = new CharacterDesignViewModel() },
             "AI生成" => new AIGenerationView { DataContext = new AIGenerationViewModel() },
-            "人物设计" => new Views.CharacterDesignView { DataContext = new CharacterDesignViewModel() },
             "设置" => new SettingsView { DataContext = new SettingsViewModel() },
+            "日志" => new LoggerView { DataContext = new LoggerViewModel() },
             _ => CurrentView
         };
     }

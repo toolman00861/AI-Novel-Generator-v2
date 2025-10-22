@@ -7,6 +7,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Styles/ModernStyles.xaml"/>
+                <ResourceDictionary Source="/Styles/LoggerStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             
             <!-- 转换器 -->
