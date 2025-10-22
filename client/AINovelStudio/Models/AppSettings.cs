@@ -13,6 +13,7 @@ namespace AINovelStudio.Models
 
     public class ProviderSettings
     {
+        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string Name { get; set; } = string.Empty;
         public string Vendor { get; set; } = "openai"; // openai|azure|openrouter|custom
         public string ApiKey { get; set; } = string.Empty;

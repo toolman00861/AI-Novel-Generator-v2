@@ -20,7 +20,15 @@ namespace AINovelStudio.ViewModels
     public class SettingsViewModel : BaseViewModel
     {
         private readonly SettingsService _service;
+        private readonly ILoggerService? _logger;
         private AppSettings _settings;
+        
+        public SettingsViewModel(ILoggerService logger)
+        {
+            _logger = logger;
+            _service = new SettingsService();
+            InitializeViewModel();
+        }
 
         public ObservableCollection<ProviderSettings> Providers { get; } = new ObservableCollection<ProviderSettings>();
 
@@ -40,33 +48,36 @@ namespace AINovelStudio.ViewModels
             }
         }
 
-        public ICommand AddProviderCommand { get; }
-        public ICommand RemoveProviderCommand { get; }
+        public ICommand SaveCommand { get; private set; }
+        public ICommand ResetCommand { get; private set; }
+        public ICommand TestCommand { get; private set; }
+        public ICommand AddProviderCommand { get; private set; }
+        public ICommand RemoveProviderCommand { get; private set; }
 
-        public SettingsViewModel() : this(new SettingsService()) { }
-
-        public SettingsViewModel(SettingsService service)
+        // 默认构造函数
+        public SettingsViewModel() 
         {
-            _service = service;
+            _service = new SettingsService();
+            InitializeViewModel();
+        }
+        
+        private void InitializeViewModel()
+        {
             _settings = _service.Load();
-
+            
             foreach (var provider in _settings.Providers)
             {
                 Providers.Add(provider);
             }
             SelectedProvider = Providers.FirstOrDefault(p => p.Name == _settings.SelectedProviderName) ?? Providers.FirstOrDefault();
-
+            
             SaveCommand = new RelayCommand(Save);
             ResetCommand = new RelayCommand(Reset);
             TestCommand = new RelayCommand(async () => await TestAsync());
-
+            
             AddProviderCommand = new RelayCommand(AddProvider);
             RemoveProviderCommand = new RelayCommand(RemoveProvider, () => SelectedProvider != null && Providers.Count > 1);
         }
-
-        public ICommand SaveCommand { get; }
-        public ICommand ResetCommand { get; }
-        public ICommand TestCommand { get; }
 
         // 常规配置
         public string ApiBase
@@ -239,6 +250,7 @@ namespace AINovelStudio.ViewModels
                 if (SelectedProvider == null)
                 {
                     MessageBox.Show("请先选择一个提供商", "校验", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    _logger?.Warning("测试连接失败：未选择提供商", "设置");
                     return;
                 }
 
@@ -246,11 +258,13 @@ namespace AINovelStudio.ViewModels
                 if (string.IsNullOrWhiteSpace(SelectedProvider.Vendor))
                 {
                     MessageBox.Show("请先设置 Vendor（openai/azure/openrouter/custom）", "校验", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    _logger?.Warning($"测试连接失败：未设置Vendor，提供商ID：{SelectedProvider.Id}", "设置");
                     return;
                 }
                 if (!Uri.TryCreate(SelectedProvider.BaseUrl, UriKind.Absolute, out _))
                 {
                     MessageBox.Show("BaseUrl 不是有效的绝对地址", "校验", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    _logger?.Warning($"测试连接失败：BaseUrl不是有效的绝对地址，URL：{SelectedProvider.BaseUrl}", "设置");
                     return;
                 }
 
@@ -260,7 +274,7 @@ namespace AINovelStudio.ViewModels
                 var requestUrl = string.IsNullOrWhiteSpace(ApiBase) ? SelectedProvider.BaseUrl : ApiBase;
 
                 // 添加详细日志
-                Debug.WriteLine($"[测试连接] 供应商: {SelectedProvider.Vendor}, URL: {requestUrl}");
+                _logger?.Info($"开始测试连接 - 供应商: {SelectedProvider.Vendor}, URL: {requestUrl}", "设置");
                 
                 // 智谋API特殊处理
                 bool isZhipu = SelectedProvider.Vendor == "zhipu" || 
@@ -270,7 +284,7 @@ namespace AINovelStudio.ViewModels
                 
                 if (isZhipu)
                 {
-                    Debug.WriteLine("[测试连接] 检测到智谋API，使用POST方法测试");
+                    _logger?.Info("检测到智谋API，使用POST方法测试", "设置");
                     
                     // 智谋API需要使用POST方法和特定的请求体
                     var testRequest = new HttpRequestMessage(HttpMethod.Post, requestUrl);
@@ -279,6 +293,7 @@ namespace AINovelStudio.ViewModels
                     if (!string.IsNullOrWhiteSpace(SelectedProvider.ApiKey))
                     {
                         testRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", SelectedProvider.ApiKey);
+                        _logger?.Debug("已添加授权头", "设置");
                     }
                     
                     // 构建一个最小化的请求体
@@ -294,13 +309,13 @@ namespace AINovelStudio.ViewModels
                     testRequest.Content = new StringContent(json, Encoding.UTF8, "application/json");
                     
                     // 记录请求详情
-                    Debug.WriteLine($"[测试连接] 请求体: {json}");
+                    _logger?.Debug($"请求体: {json}", "设置");
                     
                     var response = await client.SendAsync(testRequest);
                     var responseContent = await response.Content.ReadAsStringAsync();
                     
-                    Debug.WriteLine($"[测试连接] 响应状态: {(int)response.StatusCode}");
-                    Debug.WriteLine($"[测试连接] 响应内容: {responseContent}");
+                    _logger?.Info($"智谋API测试结果 - 状态码: {(int)response.StatusCode}, 是否成功: {response.IsSuccessStatusCode}", "设置");
+                    _logger?.Debug($"响应内容: {responseContent}", "设置");
                     
                     MessageBox.Show($"智谋API测试结果：{(int)response.StatusCode}\n\n响应内容：{(responseContent.Length > 200 ? responseContent.Substring(0, 200) + "..." : responseContent)}", 
                                    "测试", MessageBoxButton.OK, 
@@ -311,13 +326,14 @@ namespace AINovelStudio.ViewModels
                     // 常规API测试
                     var head = new HttpRequestMessage(HttpMethod.Get, requestUrl);
                     var response = await client.SendAsync(head);
-                    Debug.WriteLine($"[测试连接] 响应状态: {(int)response.StatusCode}");
+                    _logger?.Info($"API测试结果 - 状态码: {(int)response.StatusCode}, 是否成功: {response.IsSuccessStatusCode}", "设置");
                     MessageBox.Show($"网络连通：{(int)response.StatusCode}", "测试", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[测试连接错误] {ex.GetType().Name}: {ex.Message}");
+                _logger?.Error($"测试连接异常: {ex.Message}", "设置");
+                _logger?.Debug($"异常详情: {ex}", "设置");
                 MessageBox.Show($"测试失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
