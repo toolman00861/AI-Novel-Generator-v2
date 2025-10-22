@@ -212,16 +212,12 @@ namespace AINovelStudio.Services
         /// <summary>
         /// 是否启用文件日志
         /// </summary>
-        public bool EnableFileLogging { get; set; } = false;
+        public bool EnableFileLogging { get; set; } = true;
 
         /// <summary>
         /// 日志文件路径
         /// </summary>
-        public string LogFilePath { get; set; } = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "AINovelStudio",
-            "logs",
-            $"log_{DateTime.Now:yyyyMMdd}.txt");
+        public string LogFilePath { get; set; } = GetDefaultLogFilePath();
 
         /// <summary>
         /// 最大日志条目数
@@ -244,6 +240,11 @@ namespace AINovelStudio.Services
         public string LogFormatTemplate { get; set; } = "[{timestamp}] [{level}] [{source}] {message}";
 
         /// <summary>
+        /// 日志文件保留天数
+        /// </summary>
+        public int LogRetentionDays { get; set; } = 30;
+
+        /// <summary>
         /// 构造函数
         /// </summary>
         private LoggerService()
@@ -251,10 +252,82 @@ namespace AINovelStudio.Services
             _synchronizationContext = SynchronizationContext.Current;
             
             // 确保日志目录存在
-            string? logDirectory = Path.GetDirectoryName(LogFilePath);
-            if (!string.IsNullOrEmpty(logDirectory) && !Directory.Exists(logDirectory))
+            EnsureLogDirectoryExists();
+            
+            // 清理过期日志文件
+            CleanupOldLogFiles();
+        }
+
+        /// <summary>
+        /// 获取默认日志文件路径
+        /// </summary>
+        /// <returns>默认日志文件路径</returns>
+        private static string GetDefaultLogFilePath()
+        {
+            // 首先尝试使用项目根目录下的logs文件夹
+            string projectRoot = GetProjectRootDirectory();
+            if (!string.IsNullOrEmpty(projectRoot))
             {
-                Directory.CreateDirectory(logDirectory);
+                return Path.Combine(projectRoot, "logs", $"log_{DateTime.Now:yyyyMMdd}.txt");
+            }
+            
+            // 如果找不到项目根目录，使用用户本地应用数据目录
+            return Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "AINovelStudio",
+                "logs",
+                $"log_{DateTime.Now:yyyyMMdd}.txt");
+        }
+
+        /// <summary>
+        /// 获取项目根目录
+        /// </summary>
+        /// <returns>项目根目录路径，如果找不到则返回null</returns>
+        private static string? GetProjectRootDirectory()
+        {
+            try
+            {
+                // 从当前执行目录开始向上查找
+                string currentDir = AppDomain.CurrentDomain.BaseDirectory;
+                DirectoryInfo? dir = new DirectoryInfo(currentDir);
+                
+                while (dir != null)
+                {
+                    // 查找包含特定文件的目录作为项目根目录
+                    if (File.Exists(Path.Combine(dir.FullName, "AINovelStudio.csproj")) ||
+                        Directory.Exists(Path.Combine(dir.FullName, "client")) ||
+                        File.Exists(Path.Combine(dir.FullName, "README.md")))
+                    {
+                        return dir.FullName;
+                    }
+                    dir = dir.Parent;
+                }
+            }
+            catch
+            {
+                // 忽略异常，返回null
+            }
+            
+            return null;
+        }
+
+        /// <summary>
+        /// 确保日志目录存在
+        /// </summary>
+        private void EnsureLogDirectoryExists()
+        {
+            try
+            {
+                string? logDirectory = Path.GetDirectoryName(LogFilePath);
+                if (!string.IsNullOrEmpty(logDirectory) && !Directory.Exists(logDirectory))
+                {
+                    Directory.CreateDirectory(logDirectory);
+                }
+            }
+            catch (Exception ex)
+            {
+                // 如果创建目录失败，记录到调试输出
+                System.Diagnostics.Debug.WriteLine($"创建日志目录失败: {ex.Message}");
             }
         }
 
@@ -271,13 +344,13 @@ namespace AINovelStudio.Services
             OutputToDebugConsole = settings.OutputToDebugConsole;
             TimestampFormat = settings.TimestampFormat;
             LogFormatTemplate = settings.LogFormatTemplate;
+            LogRetentionDays = settings.LogRetentionDays;
             
             // 确保日志目录存在
-            string? logDirectory = Path.GetDirectoryName(LogFilePath);
-            if (!string.IsNullOrEmpty(logDirectory) && !Directory.Exists(logDirectory))
-            {
-                Directory.CreateDirectory(logDirectory);
-            }
+            EnsureLogDirectoryExists();
+            
+            // 清理过期日志文件
+            CleanupOldLogFiles();
         }
 
         /// <summary>
@@ -410,6 +483,14 @@ namespace AINovelStudio.Services
             {
                 try
                 {
+                    // 确保使用当天的日志文件
+                    string currentLogFile = GetCurrentLogFilePath();
+                    if (currentLogFile != LogFilePath)
+                    {
+                        LogFilePath = currentLogFile;
+                        EnsureLogDirectoryExists();
+                    }
+                    
                     File.AppendAllText(LogFilePath, entry.FormattedMessage + Environment.NewLine);
                 }
                 catch (Exception ex)
@@ -439,6 +520,68 @@ namespace AINovelStudio.Services
             formattedMessage = formattedMessage.Replace("{source}", string.IsNullOrEmpty(entry.Source) ? "-" : entry.Source);
             formattedMessage = formattedMessage.Replace("{message}", entry.Message);
             return formattedMessage;
+        }
+
+        /// <summary>
+        /// 获取当前日志文件路径
+        /// </summary>
+        /// <returns>当前日志文件路径</returns>
+        private string GetCurrentLogFilePath()
+        {
+            string? logDirectory = Path.GetDirectoryName(LogFilePath);
+            if (string.IsNullOrEmpty(logDirectory))
+            {
+                return GetDefaultLogFilePath();
+            }
+            
+            return Path.Combine(logDirectory, $"log_{DateTime.Now:yyyyMMdd}.txt");
+        }
+
+        /// <summary>
+        /// 清理过期的日志文件
+        /// </summary>
+        private void CleanupOldLogFiles()
+        {
+            try
+            {
+                string? logDirectory = Path.GetDirectoryName(LogFilePath);
+                if (string.IsNullOrEmpty(logDirectory) || !Directory.Exists(logDirectory))
+                {
+                    return;
+                }
+
+                DateTime cutoffDate = DateTime.Now.AddDays(-LogRetentionDays);
+                string[] logFiles = Directory.GetFiles(logDirectory, "log_*.txt");
+
+                foreach (string logFile in logFiles)
+                {
+                    try
+                    {
+                        string fileName = Path.GetFileNameWithoutExtension(logFile);
+                        if (fileName.StartsWith("log_") && fileName.Length == 12) // log_yyyyMMdd
+                        {
+                            string dateString = fileName.Substring(4); // yyyyMMdd
+                            if (DateTime.TryParseExact(dateString, "yyyyMMdd", null, 
+                                System.Globalization.DateTimeStyles.None, out DateTime fileDate))
+                            {
+                                if (fileDate < cutoffDate)
+                                {
+                                    File.Delete(logFile);
+                                    System.Diagnostics.Debug.WriteLine($"已删除过期日志文件: {logFile}");
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"删除日志文件失败 {logFile}: {ex.Message}");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"清理日志文件失败: {ex.Message}");
+            }
         }
     }
 }

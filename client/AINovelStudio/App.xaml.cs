@@ -35,20 +35,8 @@ namespace AINovelStudio
 
         private void InitializeLogger()
         {
-            // 确保日志目录存在
-            string logDirectory = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "AINovelStudio",
-                "logs");
-
-            if (!Directory.Exists(logDirectory))
-            {
-                Directory.CreateDirectory(logDirectory);
-            }
-
-            // 配置日志服务
-            _logger.EnableFileLogging = true;
-            _logger.LogFilePath = Path.Combine(logDirectory, $"log_{DateTime.Now:yyyyMMdd}.txt");
+            // 日志服务会自动使用项目根目录下的logs文件夹
+            // 不需要手动设置路径，LoggerService已经配置了默认路径
             _logger.MinimumLogLevel = LogLevel.Debug;
             _logger.OutputToDebugConsole = true;
         }

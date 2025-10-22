@@ -3,6 +3,9 @@ using AINovelStudio.Models;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
+using AINovelStudio.Services;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace AINovelStudio.ViewModels;
 
@@ -21,10 +24,16 @@ public class CharacterDesignViewModel : BaseViewModel
     private string _aiGeneratedContent = string.Empty;
     private bool _isGenerating;
 
+    private readonly AITextGenerationService _aiService;
+    private readonly SettingsService _settingsService;
+
     public CharacterDesignViewModel()
     {
         Novels = new ObservableCollection<Novel>();
         Characters = new ObservableCollection<Character>();
+
+        _settingsService = new SettingsService();
+        _aiService = new AITextGenerationService(_settingsService);
 
         CreateCharacterCommand = new RelayCommand(CreateCharacter);
         RefreshCommand = new RelayCommand(Refresh);
@@ -454,18 +463,31 @@ public class CharacterDesignViewModel : BaseViewModel
     private async void GenerateWithAI()
     {
         _isGenerating = true;
+        AIGeneratedContent = ""; // 清空输出文本，准备接收流式响应
         OnPropertyChanged(nameof(CanGenerateWithAI));
 
         try
         {
-            // 模拟AI生成过程
-            await Task.Delay(2000);
+            var settings = _settingsService.Load();
+            var maxTokens = settings.GenerationDefaults.MaxTokens;
+            var temperature = settings.GenerationDefaults.Temperature;
 
-            string generatedContent = IsGeneratePersonality ? GeneratePersonality() :
-                                    IsGenerateBackground ? GenerateBackground() :
-                                    IsGenerateDialogue ? GenerateDialogue() : string.Empty;
+            // 使用流式生成
+            await _aiService.GenerateStreamAsync(AIPrompt, temperature, maxTokens, 
+                chunk =>
+                {
+                    // 在UI线程上更新输出文本
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        AIGeneratedContent += chunk;
+                    });
+                }, 
+                CancellationToken.None);
 
-            AIGeneratedContent = generatedContent;
+            if (string.IsNullOrWhiteSpace(AIGeneratedContent))
+            {
+                AIGeneratedContent = "（AI接口返回空结果，请检查模型与参数设置）";
+            }
         }
         catch (Exception ex)
         {

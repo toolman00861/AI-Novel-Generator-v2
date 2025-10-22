@@ -1,9 +1,10 @@
-﻿using AINovelStudio.Commands;
+using AINovelStudio.Commands;
 using AINovelStudio.Models;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Linq;
 
 using AINovelStudio.Services;
 using System.Threading.Tasks;
@@ -27,6 +28,7 @@ public class AIGenerationViewModel : BaseViewModel
     private double _creativity = 0.7;
     private string _generationStatus = "就绪";
     private bool _isGenerating;
+    private ProviderSettings? _selectedProvider;
 
     private readonly AITextGenerationService _aiService;
     private readonly SettingsService _settingsService;
@@ -35,6 +37,7 @@ public class AIGenerationViewModel : BaseViewModel
     {
         Novels = new ObservableCollection<Novel>();
         Chapters = new ObservableCollection<Chapter>();
+        Providers = new ObservableCollection<ProviderSettings>();
         
         GenerateCommand = new RelayCommand(Generate, CanExecuteGenerate);
         CopyCommand = new RelayCommand(CopyOutput);
@@ -48,6 +51,7 @@ public class AIGenerationViewModel : BaseViewModel
         _wordLimit = defaults.WordLimit;
         _creativity = defaults.Temperature;
 
+        LoadProviders();
         LoadSampleData();
     }
 
@@ -62,6 +66,33 @@ public class AIGenerationViewModel : BaseViewModel
     /// 章节列表
     /// </summary>
     public ObservableCollection<Chapter> Chapters { get; }
+
+    /// <summary>
+    /// 供应商列表
+    /// </summary>
+    public ObservableCollection<ProviderSettings> Providers { get; }
+
+    /// <summary>
+    /// 选中的供应商
+    /// </summary>
+    public ProviderSettings? SelectedProvider
+    {
+        get => _selectedProvider;
+        set
+        {
+            if (SetProperty(ref _selectedProvider, value))
+            {
+                // 更新设置中的选中供应商
+                if (value != null)
+                {
+                    var settings = _settingsService.Load();
+                    settings.SelectedProviderName = value.Name;
+                    _settingsService.Save(settings);
+                }
+                OnPropertyChanged(nameof(CanGenerate));
+            }
+        }
+    }
 
     /// <summary>
     /// 是否选择续写
@@ -322,6 +353,24 @@ public class AIGenerationViewModel : BaseViewModel
     }
 
     /// <summary>
+    /// 加载供应商列表
+    /// </summary>
+    private void LoadProviders()
+    {
+        var settings = _settingsService.Load();
+        
+        Providers.Clear();
+        foreach (var provider in settings.Providers)
+        {
+            Providers.Add(provider);
+        }
+        
+        // 设置当前选中的供应商
+        SelectedProvider = Providers.FirstOrDefault(p => p.Name == settings.SelectedProviderName) 
+                          ?? Providers.FirstOrDefault();
+    }
+
+    /// <summary>
     /// 加载示例数据
     /// </summary>
     private void LoadSampleData()
@@ -374,6 +423,7 @@ public class AIGenerationViewModel : BaseViewModel
     {
         _isGenerating = true;
         GenerationStatus = "生成中...";
+        OutputText = ""; // 清空输出文本，准备接收流式响应
         OnPropertyChanged(nameof(GenerateButtonText));
         OnPropertyChanged(nameof(CanGenerate));
 
@@ -384,11 +434,22 @@ public class AIGenerationViewModel : BaseViewModel
             var settings = _settingsService.Load();
             var maxTokens = settings.GenerationDefaults.MaxTokens;
 
-            var generatedContent = await _aiService.GenerateAsync(prompt, _creativity, maxTokens, CancellationToken.None);
+            // 使用流式生成
+            await _aiService.GenerateStreamAsync(prompt, _creativity, maxTokens, 
+                chunk =>
+                {
+                    // 在UI线程上更新输出文本
+                    Application.Current.Dispatcher.Invoke(() =>
+                    {
+                        OutputText += chunk;
+                    });
+                }, 
+                CancellationToken.None);
 
-            OutputText = string.IsNullOrWhiteSpace(generatedContent)
-                ? "（AI接口返回空结果，请检查模型与参数设置）"
-                : generatedContent;
+            if (string.IsNullOrWhiteSpace(OutputText))
+            {
+                OutputText = "（AI接口返回空结果，请检查模型与参数设置）";
+            }
             GenerationStatus = "生成完成";
         }
         catch (Exception ex)

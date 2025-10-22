@@ -112,17 +112,25 @@
                                 </StackPanel>
 
                                 <StackPanel Grid.Column="1">
-                                    <TextBlock Text="Temperature"
-                                               Style="{StaticResource LabelStyle}"/>
-                                    <Slider Style="{StaticResource ModernSliderStyle}"
-                                            Minimum="0"
-                                            Maximum="1"
-                                            TickFrequency="0.05"
-                                            IsSnapToTickEnabled="True"
-                                            Value="{Binding Temperature}"
-                                            Margin="0,6,0,6"/>
-                                    <TextBlock Text="{Binding Temperature, StringFormat='当前温度：{0:F2}'}"
-                                               Style="{StaticResource SecondaryTextStyle}"/>
+                                    <StackPanel Margin="0,0,0,12">
+                                        <TextBlock Text="超时时间 (秒)"
+                                                   Style="{StaticResource LabelStyle}"/>
+                                        <TextBox Style="{StaticResource ModernTextBoxStyle}"
+                                                 Text="{Binding TimeoutSeconds}"/>
+                                    </StackPanel>
+                                    <StackPanel>
+                                        <TextBlock Text="Temperature"
+                                                   Style="{StaticResource LabelStyle}"/>
+                                        <Slider Style="{StaticResource ModernSliderStyle}"
+                                                Minimum="0"
+                                                Maximum="1"
+                                                TickFrequency="0.05"
+                                                IsSnapToTickEnabled="True"
+                                                Value="{Binding Temperature}"
+                                                Margin="0,6,0,6"/>
+                                        <TextBlock Text="{Binding Temperature, StringFormat='当前温度：{0:F2}'}"
+                                                   Style="{StaticResource SecondaryTextStyle}"/>
+                                    </StackPanel>
                                 </StackPanel>
                             </Grid>
                         </StackPanel>
@@ -186,6 +194,7 @@
                                 <ComboBoxItem Content="openai"/>
                                 <ComboBoxItem Content="azure"/>
                                 <ComboBoxItem Content="openrouter"/>
+                                <ComboBoxItem Content="zhipu"/>
                                 <ComboBoxItem Content="custom"/>
                             </ComboBox>
                         </StackPanel>

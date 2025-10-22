@@ -11,6 +11,7 @@ using System.Collections.ObjectModel;
 using System.Text.Json;
 using System.Text;
 using System.Diagnostics;
+using System.Linq;
 
 namespace AINovelStudio.ViewModels
 {
@@ -39,6 +40,8 @@ namespace AINovelStudio.ViewModels
             set
             {
                 _selectedProvider = value;
+                // 立即更新设置中的选中供应商名称
+                _settings.SelectedProviderName = value?.Name ?? string.Empty;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(Vendor));
                 OnPropertyChanged(nameof(ApiKey));
@@ -171,6 +174,12 @@ namespace AINovelStudio.ViewModels
             set { _settings.GenerationDefaults.MaxTokens = value; OnPropertyChanged(); }
         }
 
+        public int TimeoutSeconds
+        {
+            get => _settings.GenerationDefaults.TimeoutSeconds;
+            set { _settings.GenerationDefaults.TimeoutSeconds = value; OnPropertyChanged(); }
+        }
+
         private void Save()
         {
             try
@@ -211,6 +220,7 @@ namespace AINovelStudio.ViewModels
             OnPropertyChanged(nameof(WordLimit));
             OnPropertyChanged(nameof(Temperature));
             OnPropertyChanged(nameof(MaxTokens));
+            OnPropertyChanged(nameof(TimeoutSeconds));
             CommandManager.InvalidateRequerySuggested();
             MessageBox.Show("已重置为默认值（未保存）", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
         }
@@ -257,7 +267,7 @@ namespace AINovelStudio.ViewModels
                 // 基础校验
                 if (string.IsNullOrWhiteSpace(SelectedProvider.Vendor))
                 {
-                    MessageBox.Show("请先设置 Vendor（openai/azure/openrouter/custom）", "校验", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("请先设置 Vendor（openai/azure/openrouter/zhipu/custom）", "校验", MessageBoxButton.OK, MessageBoxImage.Warning);
                     _logger?.Warning($"测试连接失败：未设置Vendor，提供商ID：{SelectedProvider.Id}", "设置");
                     return;
                 }
@@ -265,6 +275,12 @@ namespace AINovelStudio.ViewModels
                 {
                     MessageBox.Show("BaseUrl 不是有效的绝对地址", "校验", MessageBoxButton.OK, MessageBoxImage.Warning);
                     _logger?.Warning($"测试连接失败：BaseUrl不是有效的绝对地址，URL：{SelectedProvider.BaseUrl}", "设置");
+                    return;
+                }
+                if (string.IsNullOrWhiteSpace(SelectedProvider.ApiKey))
+                {
+                    MessageBox.Show("请先设置 ApiKey", "校验", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    _logger?.Warning($"测试连接失败：未设置ApiKey，提供商：{SelectedProvider.Name}", "设置");
                     return;
                 }
 

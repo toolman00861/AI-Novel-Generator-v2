@@ -171,6 +171,13 @@ namespace AINovelStudio.Services
                 settings.SelectedProviderName = "Default";
             }
 
+            // 当存在供应商但未设置选中的供应商时，回退到第一个
+            if (string.IsNullOrWhiteSpace(settings.SelectedProviderName) && settings.Providers.Count > 0)
+            {
+                settings.SelectedProviderName = settings.Providers.First().Name;
+                try { Save(settings); } catch { }
+            }
+
             return settings;
         }
 
