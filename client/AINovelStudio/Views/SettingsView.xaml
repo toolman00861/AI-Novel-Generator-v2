@@ -47,182 +47,190 @@
                        Style="{StaticResource SecondaryTextStyle}"/>
         </StackPanel>
 
-        <!-- 常规设置 -->
-        <Border Grid.Row="1"
-                Grid.Column="0"
-                Style="{StaticResource CardStyle}"
-                Margin="0,0,16,0">
-            <StackPanel>
-                <StackPanel Margin="0,0,0,16">
-                    <TextBlock Text="常规"
-                               Style="{StaticResource SubtitleStyle}"/>
-                    <TextBlock Text="控制 API 基础地址与客户端行为"
-                               Style="{StaticResource SecondaryTextStyle}"/>
-                </StackPanel>
+        <!-- 页面内容滚动容器，避免溢出不可见 -->
+        <ScrollViewer Grid.Row="1" Grid.ColumnSpan="2" VerticalScrollBarVisibility="Auto">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-                <StackPanel Margin="0,0,0,16">
-                    <TextBlock Text="ApiBase"
-                               Style="{StaticResource LabelStyle}"/>
-                    <TextBox Style="{StaticResource ModernTextBoxStyle}"
-                             Text="{Binding ApiBase, UpdateSourceTrigger=PropertyChanged}"/>
-                </StackPanel>
-
-                <StackPanel Margin="0,0,0,16">
-                    <TextBlock Text="功能开关"
-                               Style="{StaticResource SubtitleStyle}"/>
-                    <StackPanel Margin="0,6,0,0">
-                        <CheckBox Content="启用流式生成（Streaming）"
-                                  IsChecked="{Binding StreamingEnabled}"
-                                  Margin="0,0,0,6"/>
-                        <CheckBox Content="自动保存工作区"
-                                  IsChecked="{Binding AutoSaveEnabled}"/>
-                    </StackPanel>
-                </StackPanel>
-
-                <StackPanel Margin="0,0,0,16">
-                    <TextBlock Text="生成默认参数"
-                               Style="{StaticResource SubtitleStyle}"/>
-                    <Grid Margin="0,8,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-
-                        <StackPanel Grid.Column="0"
-                                    Margin="0,0,12,0">
-                            <StackPanel Margin="0,0,0,12">
-                                <TextBlock Text="字数限制 (WordLimit)"
-                                           Style="{StaticResource LabelStyle}"/>
-                                <TextBox Style="{StaticResource ModernTextBoxStyle}"
-                                         Text="{Binding WordLimit}"/>
-                            </StackPanel>
-                            <StackPanel>
-                                <TextBlock Text="MaxTokens"
-                                           Style="{StaticResource LabelStyle}"/>
-                                <TextBox Style="{StaticResource ModernTextBoxStyle}"
-                                         Text="{Binding MaxTokens}"/>
-                            </StackPanel>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="1">
-                            <TextBlock Text="Temperature"
-                                       Style="{StaticResource LabelStyle}"/>
-                            <Slider Style="{StaticResource ModernSliderStyle}"
-                                    Minimum="0"
-                                    Maximum="1"
-                                    TickFrequency="0.05"
-                                    IsSnapToTickEnabled="True"
-                                    Value="{Binding Temperature}"
-                                    Margin="0,6,0,6"/>
-                            <TextBlock Text="{Binding Temperature, StringFormat='当前温度：{0:F2}'}"
+                <!-- 常规设置 -->
+                <Border Grid.Column="0"
+                        Style="{StaticResource CardStyle}"
+                        Margin="0,0,16,0">
+                    <StackPanel>
+                        <StackPanel Margin="0,0,0,16">
+                            <TextBlock Text="常规"
+                                       Style="{StaticResource SubtitleStyle}"/>
+                            <TextBlock Text="控制 API 基础地址与客户端行为"
                                        Style="{StaticResource SecondaryTextStyle}"/>
                         </StackPanel>
-                    </Grid>
-                </StackPanel>
 
-                <StackPanel Orientation="Horizontal"
-                            HorizontalAlignment="Right">
-                    <Button Content="重置为默认值"
-                            Style="{StaticResource SecondaryButtonStyle}"
-                            Command="{Binding ResetCommand}"
-                            Margin="0,0,12,0"/>
-                    <Button Content="保存设置"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Command="{Binding SaveCommand}"/>
-                </StackPanel>
-            </StackPanel>
-        </Border>
+                        <StackPanel Margin="0,0,0,16">
+                            <TextBlock Text="ApiBase"
+                                       Style="{StaticResource LabelStyle}"/>
+                            <TextBox Style="{StaticResource ModernTextBoxStyle}"
+                                     Text="{Binding ApiBase, UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
 
-        <!-- 模型供应商 -->
-        <Border Grid.Row="1"
-                Grid.Column="1"
-                Style="{StaticResource CardStyle}"
-                Margin="16,0,0,0">
-            <StackPanel>
-                <StackPanel Margin="0,0,0,16">
-                    <TextBlock Text="模型供应商（Provider）"
-                               Style="{StaticResource SubtitleStyle}"/>
-                    <TextBlock Text="管理多个模型供应商配置"
-                               Style="{StaticResource SecondaryTextStyle}"/>
-                </StackPanel>
+                        <StackPanel Margin="0,0,0,16">
+                            <TextBlock Text="功能开关"
+                                       Style="{StaticResource SubtitleStyle}"/>
+                            <StackPanel Margin="0,6,0,0">
+                                <CheckBox Content="启用流式生成（Streaming）"
+                                          IsChecked="{Binding StreamingEnabled}"
+                                          Margin="0,0,0,6"/>
+                                <CheckBox Content="自动保存工作区"
+                                          IsChecked="{Binding AutoSaveEnabled}"/>
+                            </StackPanel>
+                        </StackPanel>
 
-                <StackPanel Margin="0,0,0,16"
-                            Orientation="Horizontal">
-                    <TextBlock Text="当前供应商"
-                               Style="{StaticResource LabelStyle}"
-                               VerticalAlignment="Center"
-                               Margin="0,0,8,0"/>
-                    <ComboBox Style="{StaticResource ModernComboBoxStyle}"
-                              ItemsSource="{Binding Providers}"
-                              SelectedItem="{Binding SelectedProvider}"
-                              Width="200">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Name}"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
-                </StackPanel>
+                        <StackPanel Margin="0,0,0,16">
+                            <TextBlock Text="生成默认参数"
+                                       Style="{StaticResource SubtitleStyle}"/>
+                            <Grid Margin="0,8,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
 
-                <StackPanel Margin="0,0,0,16">
-                    <TextBlock Text="名称"
-                               Style="{StaticResource LabelStyle}"/>
-                    <TextBox Style="{StaticResource ModernTextBoxStyle}"
-                              Text="{Binding SelectedProvider.Name, UpdateSourceTrigger=PropertyChanged}"/>
-                </StackPanel>
+                                <StackPanel Grid.Column="0"
+                                            Margin="0,0,12,0">
+                                    <StackPanel Margin="0,0,0,12">
+                                        <TextBlock Text="字数限制 (WordLimit)"
+                                                   Style="{StaticResource LabelStyle}"/>
+                                        <TextBox Style="{StaticResource ModernTextBoxStyle}"
+                                                 Text="{Binding WordLimit}"/>
+                                    </StackPanel>
+                                    <StackPanel>
+                                        <TextBlock Text="MaxTokens"
+                                                   Style="{StaticResource LabelStyle}"/>
+                                        <TextBox Style="{StaticResource ModernTextBoxStyle}"
+                                                 Text="{Binding MaxTokens}"/>
+                                    </StackPanel>
+                                </StackPanel>
 
-                <StackPanel Margin="0,0,0,16">
-                    <TextBlock Text="Vendor"
-                               Style="{StaticResource LabelStyle}"/>
-                    <ComboBox Style="{StaticResource ModernComboBoxStyle}"
-                              SelectedValue="{Binding Vendor}"
-                              SelectedValuePath="Content">
-                        <ComboBoxItem Content="openai"/>
-                        <ComboBoxItem Content="azure"/>
-                        <ComboBoxItem Content="openrouter"/>
-                        <ComboBoxItem Content="custom"/>
-                    </ComboBox>
-                </StackPanel>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Temperature"
+                                               Style="{StaticResource LabelStyle}"/>
+                                    <Slider Style="{StaticResource ModernSliderStyle}"
+                                            Minimum="0"
+                                            Maximum="1"
+                                            TickFrequency="0.05"
+                                            IsSnapToTickEnabled="True"
+                                            Value="{Binding Temperature}"
+                                            Margin="0,6,0,6"/>
+                                    <TextBlock Text="{Binding Temperature, StringFormat='当前温度：{0:F2}'}"
+                                               Style="{StaticResource SecondaryTextStyle}"/>
+                                </StackPanel>
+                            </Grid>
+                        </StackPanel>
 
-                <StackPanel Margin="0,0,0,16">
-                    <TextBlock Text="BaseUrl"
-                               Style="{StaticResource LabelStyle}"/>
-                    <TextBox Style="{StaticResource ModernTextBoxStyle}"
-                             Text="{Binding BaseUrl, UpdateSourceTrigger=PropertyChanged}"/>
-                    <TextBlock Text="例如： https://api.openai.com/v1 或 Azure 提供的完整端点"
-                               Style="{StaticResource SecondaryTextStyle}"
-                               Margin="0,4,0,0"/>
-                </StackPanel>
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Right">
+                            <Button Content="重置为默认值"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding ResetCommand}"
+                                    Margin="0,0,12,0"/>
+                            <Button Content="保存设置"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Command="{Binding SaveCommand}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
 
-                <StackPanel Margin="0,0,0,16">
-                    <TextBlock Text="ApiKey"
-                               Style="{StaticResource LabelStyle}"/>
-                    <TextBox Style="{StaticResource ModernTextBoxStyle}"
-                             Text="{Binding ApiKey, UpdateSourceTrigger=PropertyChanged}"/>
-                </StackPanel>
+                <!-- 模型供应商 -->
+                <Border Grid.Column="1"
+                        Style="{StaticResource CardStyle}"
+                        Margin="16,0,0,0">
+                    <StackPanel>
+                        <StackPanel Margin="0,0,0,16">
+                            <TextBlock Text="模型供应商（Provider）"
+                                       Style="{StaticResource SubtitleStyle}"/>
+                            <TextBlock Text="管理多个模型供应商配置"
+                                       Style="{StaticResource SecondaryTextStyle}"/>
+                        </StackPanel>
 
-                <StackPanel Margin="0,0,0,16">
-                    <TextBlock Text="DefaultModel"
-                               Style="{StaticResource LabelStyle}"/>
-                    <TextBox Style="{StaticResource ModernTextBoxStyle}"
-                             Text="{Binding DefaultModel, UpdateSourceTrigger=PropertyChanged}"/>
-                </StackPanel>
+                        <StackPanel Margin="0,0,0,16"
+                                    Orientation="Horizontal">
+                            <TextBlock Text="当前供应商"
+                                       Style="{StaticResource LabelStyle}"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,0"/>
+                            <ComboBox Style="{StaticResource ModernComboBoxStyle}"
+                                      ItemsSource="{Binding Providers}"
+                                      SelectedItem="{Binding SelectedProvider}"
+                                      Width="200">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Name}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
 
-                <StackPanel Orientation="Horizontal"
-                            HorizontalAlignment="Right">
-                    <Button Content="添加供应商"
-                            Style="{StaticResource SecondaryButtonStyle}"
-                            Command="{Binding AddProviderCommand}"
-                            Margin="0,0,12,0"/>
-                    <Button Content="移除当前"
-                            Style="{StaticResource SecondaryButtonStyle}"
-                            Command="{Binding RemoveProviderCommand}"
-                            Margin="0,0,12,0"/>
-                    <Button Content="测试连通性"
-                            Style="{StaticResource SecondaryButtonStyle}"
-                            Command="{Binding TestCommand}"/>
-                </StackPanel>
-            </StackPanel>
-        </Border>
+                        <StackPanel Margin="0,0,0,16">
+                            <TextBlock Text="名称"
+                                       Style="{StaticResource LabelStyle}"/>
+                            <TextBox Style="{StaticResource ModernTextBoxStyle}"
+                                      Text="{Binding SelectedProvider.Name, UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,16">
+                            <TextBlock Text="Vendor"
+                                       Style="{StaticResource LabelStyle}"/>
+                            <ComboBox Style="{StaticResource ModernComboBoxStyle}"
+                                      SelectedValue="{Binding Vendor}"
+                                      SelectedValuePath="Content">
+                                <ComboBoxItem Content="openai"/>
+                                <ComboBoxItem Content="azure"/>
+                                <ComboBoxItem Content="openrouter"/>
+                                <ComboBoxItem Content="custom"/>
+                            </ComboBox>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,16">
+                            <TextBlock Text="BaseUrl"
+                                       Style="{StaticResource LabelStyle}"/>
+                            <TextBox Style="{StaticResource ModernTextBoxStyle}"
+                                     Text="{Binding BaseUrl, UpdateSourceTrigger=PropertyChanged}"/>
+                            <TextBlock Text="例如： https://api.openai.com/v1 或 Azure 提供的完整端点"
+                                       Style="{StaticResource SecondaryTextStyle}"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,16">
+                            <TextBlock Text="ApiKey"
+                                       Style="{StaticResource LabelStyle}"/>
+                            <TextBox Style="{StaticResource ModernTextBoxStyle}"
+                                     Text="{Binding ApiKey, UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,0,16">
+                            <TextBlock Text="DefaultModel"
+                                       Style="{StaticResource LabelStyle}"/>
+                            <TextBox Style="{StaticResource ModernTextBoxStyle}"
+                                     Text="{Binding DefaultModel, UpdateSourceTrigger=PropertyChanged}"/>
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Right">
+                            <Button Content="添加供应商"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding AddProviderCommand}"
+                                    Margin="0,0,12,0"/>
+                            <Button Content="移除当前"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding RemoveProviderCommand}"
+                                    Margin="0,0,12,0"/>
+                            <Button Content="测试连通性"
+                                    Style="{StaticResource SecondaryButtonStyle}"
+                                    Command="{Binding TestCommand}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </ScrollViewer>
     </Grid>
 </UserControl>

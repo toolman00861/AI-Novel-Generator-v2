@@ -3,6 +3,7 @@
 
     <!-- 颜色定义 -->
     <SolidColorBrush x:Key="PrimaryBrush" Color="#2196F3"/>
+    <Color x:Key="PrimaryColor">#2196F3</Color>
     <SolidColorBrush x:Key="PrimaryDarkBrush" Color="#1976D2"/>
     <SolidColorBrush x:Key="AccentBrush" Color="#FF4081"/>
     <SolidColorBrush x:Key="BackgroundBrush" Color="#F6F7FB"/>
@@ -34,6 +35,7 @@
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
         <Setter Property="Padding" Value="16,8"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="FontWeight" Value="Normal"/>
@@ -222,6 +224,35 @@
         </Setter>
     </Style>
 
+    <!-- ComboBox 下拉项样式 -->
+    <Style x:Key="ModernComboBoxItemStyle" TargetType="ComboBoxItem">
+        <Setter Property="Padding" Value="12,8"/>
+        <Setter Property="Margin" Value="0,2"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="UseLayoutRounding" Value="True"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBoxItem">
+                    <Border x:Name="ItemRoot" Background="{TemplateBinding Background}" CornerRadius="4" Padding="{TemplateBinding Padding}" SnapsToDevicePixels="True">
+                        <ContentPresenter SnapsToDevicePixels="True" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="ItemRoot" Property="Background" Value="{StaticResource HoverBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="ItemRoot" Property="Background" Value="{StaticResource PrimaryBrush}"/>
+                            <Setter Property="Foreground" Value="White"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- 现代化组合框样式 -->
     <Style x:Key="ModernComboBoxStyle" TargetType="ComboBox">
         <Setter Property="Background" Value="{StaticResource SurfaceBrush}"/>
@@ -231,6 +262,9 @@
         <Setter Property="Padding" Value="12,8"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="Height" Value="36"/>
+        <Setter Property="ItemContainerStyle" Value="{StaticResource ModernComboBoxItemStyle}"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="UseLayoutRounding" Value="True"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ComboBox">
@@ -238,11 +272,17 @@
                         <ToggleButton x:Name="DropDownToggle"
                                       Focusable="False"
                                       ClickMode="Press"
+                                      Cursor="Hand"
+                                      BorderThickness="0"
+                                      Padding="0"
+                                      Background="Transparent"
                                       IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
-                            <Border CornerRadius="4"
+                            <Border x:Name="ToggleRoot" CornerRadius="5"
                                     Background="{TemplateBinding Background}"
                                     BorderBrush="{TemplateBinding BorderBrush}"
-                                    BorderThickness="{TemplateBinding BorderThickness}">
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    Effect="{x:Null}"
+                                    SnapsToDevicePixels="True">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -251,38 +291,78 @@
                                     <ContentPresenter Grid.Column="0"
                                                       Content="{TemplateBinding SelectionBoxItem}"
                                                       ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
-                                                      Margin="{TemplateBinding Padding}"
+                                                      Margin="12,0,0,0"
                                                       VerticalAlignment="Center"
                                                       HorizontalAlignment="Left"
-                                                      IsHitTestVisible="False"/>
-                                    <Path Grid.Column="1"
+                                                      IsHitTestVisible="False"
+                                                      TextElement.FontSize="{TemplateBinding FontSize}"
+                                                      TextElement.Foreground="{TemplateBinding Foreground}"
+                                                      SnapsToDevicePixels="True"/>
+                                    <Path x:Name="Arrow" Grid.Column="1"
                                           Data="M 0 0 L 4 4 L 8 0 Z"
                                           Fill="{StaticResource TextSecondaryBrush}"
                                           Margin="0,0,12,0"
-                                          VerticalAlignment="Center"/>
+                                          VerticalAlignment="Center"
+                                          SnapsToDevicePixels="True">
+                                        <Path.RenderTransform>
+                                            <RotateTransform Angle="0" CenterX="4" CenterY="2"/>
+                                        </Path.RenderTransform>
+                                    </Path>
                                 </Grid>
                             </Border>
                         </ToggleButton>
                         <Popup x:Name="PART_Popup"
                                IsOpen="{TemplateBinding IsDropDownOpen}"
                                Placement="Bottom"
+                               AllowsTransparency="True"
+                               PopupAnimation="Fade"
                                PlacementTarget="{Binding RelativeSource={RelativeSource TemplatedParent}}">
                             <Border Background="{StaticResource SurfaceBrush}"
                                     BorderBrush="{StaticResource BorderBrush}"
                                     BorderThickness="1"
-                                    CornerRadius="4"
-                                    MaxHeight="200"
-                                    MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}">
-                                <ScrollViewer>
-                                    <ItemsPresenter/>
+                                    CornerRadius="6"
+                                    Padding="4"
+                                    Margin="0,2,0,0"
+                                    MaxHeight="240"
+                                    MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                                    SnapsToDevicePixels="True">
+                                <Border.Effect>
+                                    <DropShadowEffect Color="Black" Opacity="0.25" ShadowDepth="2" BlurRadius="6"/>
+                                </Border.Effect>
+                                <ScrollViewer SnapsToDevicePixels="True"
+                                              HorizontalScrollBarVisibility="Disabled"
+                                              VerticalScrollBarVisibility="Auto">
+                                    <ItemsPresenter SnapsToDevicePixels="True"/>
                                 </ScrollViewer>
                             </Border>
                         </Popup>
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsFocused" Value="True">
-                            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
-                            <Setter Property="BorderThickness" Value="2"/>
+                            <Setter TargetName="ToggleRoot" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                            <Setter TargetName="ToggleRoot" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="{StaticResource PrimaryColor}" Opacity="0.2" ShadowDepth="0" BlurRadius="4"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Arrow" Property="Fill" Value="{StaticResource PrimaryBrush}"/>
+                            <Setter TargetName="ToggleRoot" Property="Background" Value="{StaticResource HoverBrush}"/>
+                            <Setter TargetName="ToggleRoot" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsDropDownOpen" Value="True">
+                            <Setter TargetName="Arrow" Property="RenderTransform">
+                                <Setter.Value>
+                                    <RotateTransform Angle="180" CenterX="4" CenterY="2"/>
+                                </Setter.Value>
+                            </Setter>
+                            <Setter TargetName="ToggleRoot" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                            <Setter TargetName="ToggleRoot" Property="Effect">
+                                <Setter.Value>
+                                    <DropShadowEffect Color="{StaticResource PrimaryColor}" Opacity="0.2" ShadowDepth="0" BlurRadius="4"/>
+                                </Setter.Value>
+                            </Setter>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
