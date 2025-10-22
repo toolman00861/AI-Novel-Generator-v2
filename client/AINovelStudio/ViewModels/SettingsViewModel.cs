@@ -160,7 +160,7 @@ namespace AINovelStudio.ViewModels
             try
             {
                 _settings.Providers = Providers.ToList();
-                _settings.SelectedProviderName = SelectedProvider?.Name;
+                _settings.SelectedProviderName = SelectedProvider?.Name ?? string.Empty;
                 _service.Save(_settings);
                 MessageBox.Show("设置已保存", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
             }

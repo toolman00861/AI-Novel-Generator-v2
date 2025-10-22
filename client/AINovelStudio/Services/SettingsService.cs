@@ -75,7 +75,7 @@ namespace AINovelStudio.Services
 
                 // Migrate old provider data if no providers exist
                 cmd.CommandText = "SELECT COUNT(*) FROM ProviderSettings;";
-                var count = (long)cmd.ExecuteScalar();
+                var count = cmd.ExecuteScalar() as long? ?? 0;
                 if (count == 0)
                 {
                     cmd.CommandText = @"INSERT INTO ProviderSettings (Name, Vendor, ApiKey, BaseUrl, DefaultModel)
