@@ -13,7 +13,7 @@ using System.Text; // 新增：用于流式缓冲
 using System.Windows.Threading; // 新增：用于UI定时刷新
 using System.IO;
 using Microsoft.Win32;
-using AINovelStudio.Services; // NovelStorageService
+
 
 namespace AINovelStudio.ViewModels;
 
@@ -612,7 +612,7 @@ public class AIGenerationViewModel : BaseViewModel
     
         try
         {
-            _storageService.SaveGeneratedContent(SelectedNovel.Title ?? "未命名小说", SelectedChapter.Title ?? "未命名章节", OutputText);
+            _storageService.SaveGeneratedContent((SelectedNovel?.Title) ?? "未命名小说", (SelectedChapter?.Title) ?? "未命名章节", OutputText);
         }
         catch (Exception ex)
         {
