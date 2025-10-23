@@ -11,6 +11,9 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Text; // 新增：用于流式缓冲
 using System.Windows.Threading; // 新增：用于UI定时刷新
+using System.IO;
+using Microsoft.Win32;
+using AINovelStudio.Services; // NovelStorageService
 
 namespace AINovelStudio.ViewModels;
 
@@ -40,6 +43,7 @@ public class AIGenerationViewModel : BaseViewModel
     private readonly object _streamLock = new object();
     private DispatcherTimer? _flushTimer;
     private int _receivedCharCount;
+    private readonly NovelStorageService _storageService = new NovelStorageService();
 
     public AIGenerationViewModel()
     {
@@ -591,19 +595,31 @@ public class AIGenerationViewModel : BaseViewModel
     /// </summary>
     private void SaveToChapter()
     {
-        if (string.IsNullOrWhiteSpace(OutputText) || SelectedNovel == null)
+        if (SelectedNovel == null || SelectedChapter == null || string.IsNullOrWhiteSpace(OutputText))
+        {
+            MessageBox.Show("请选择小说与章节，并且确保有生成内容。", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
-
+        }
+    
+        SelectedChapter.Content = OutputText;
         var chapter = SelectedChapter ?? new Chapter { Title = "AI生成片段" };
         chapter.Content = OutputText;
-
-        if (!SelectedNovel.Chapters.Contains(chapter))
+        if (SelectedChapter == null)
         {
-            SelectedNovel.Chapters.Add(chapter);
-            LoadChapters();
+            SelectedChapter = chapter;
+            SelectedNovel?.Chapters.Add(chapter);
         }
-
-        MessageBox.Show("已保存到章节", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+    
+        try
+        {
+            _storageService.SaveGeneratedContent(SelectedNovel.Title ?? "未命名小说", SelectedChapter.Title ?? "未命名章节", OutputText);
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"保存到本地数据库失败：{ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+    
+        MessageBox.Show("已保存到章节并写入本地存储。", "成功", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     /// <summary>
